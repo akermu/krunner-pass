@@ -1,0 +1,9 @@
+[Global]
+IconName=object-unlocked
+Comment=Krunner integration for pass
+Name=Pass
+
+[Event/passwordunlocked]
+Name=Password copied to clipboard
+Comment=Password copied to clipboard
+Action=Popup
