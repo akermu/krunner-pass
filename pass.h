@@ -35,7 +35,7 @@ public:
     
 protected:
     void init();
-    void prepare();
+    void initPasswords();
 
 private:
     QDir baseDir;

@@ -61,17 +61,17 @@ void Pass::init() {
         }
     }
 
-    connect(this, SIGNAL(prepare()), this, SLOT(prepareForMatchSession()));
+    initPasswords();
 }
 
-void Pass::prepare() {
+void Pass::initPasswords() {
     passwords.clear();
-    QDirIterator it(baseDir, QDirIterator::Subdirectories);
+    QDirIterator it(this->baseDir, QDirIterator::Subdirectories);
     while (it.hasNext()) {
         it.next();
         auto fileInfo = it.fileInfo();
         if (fileInfo.isFile() && fileInfo.suffix() == "gpg") {
-            QString password = baseDir.relativeFilePath(fileInfo.absoluteFilePath());
+            QString password = this->baseDir.relativeFilePath(fileInfo.absoluteFilePath());
             // Remove suffix ".gpg"
             password.chop(4);
             passwords.append(password);
