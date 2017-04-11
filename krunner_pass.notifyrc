@@ -3,7 +3,7 @@ IconName=object-unlocked
 Comment=Krunner integration for pass
 Name=Pass
 
-[Event/passwordunlocked]
+[Event/password-unlocked]
 Name=Password copied to clipboard
 Comment=Password copied to clipboard
 Action=Popup
