@@ -62,10 +62,14 @@ void Pass::init() {
     }
 
     initPasswords();
+
+    connect(&watcher, SIGNAL(directoryChanged(QString)), this, SLOT(reinitPasswords(QString)));
 }
 
 void Pass::initPasswords() {
     passwords.clear();
+
+    watcher.addPath(this->baseDir.absolutePath());
     QDirIterator it(this->baseDir, QDirIterator::Subdirectories);
     while (it.hasNext()) {
         it.next();
@@ -75,8 +79,18 @@ void Pass::initPasswords() {
             // Remove suffix ".gpg"
             password.chop(4);
             passwords.append(password);
+        } else if (fileInfo.isDir() && it.fileName() != "." && it.fileName() != "..") {
+            watcher.addPath(it.filePath());
         }
     }
+}
+
+void Pass::reinitPasswords(const QString &path) {
+    Q_UNUSED(path);
+
+    lock.lockForWrite();
+    initPasswords();
+    lock.unlock();
 }
 
 void Pass::match(Plasma::RunnerContext &context)
@@ -87,6 +101,7 @@ void Pass::match(Plasma::RunnerContext &context)
 
     QList<Plasma::QueryMatch> matches;
 
+    lock.lockForRead();
     Q_FOREACH (auto password, passwords) {
         QRegularExpression re(".*" + input + ".*");
         if (re.match(password).hasMatch()) {
@@ -101,6 +116,8 @@ void Pass::match(Plasma::RunnerContext &context)
             matches.append(match);
         }
     }
+    lock.unlock();
+
     context.addMatches(matches);
 }
 

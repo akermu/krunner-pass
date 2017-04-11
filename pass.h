@@ -21,6 +21,8 @@
 
 #include <KRunner/AbstractRunner>
 #include <QDir>
+#include <QReadWriteLock>
+#include <QFileSystemWatcher>
 
 class Pass : public Plasma::AbstractRunner
 {
@@ -33,6 +35,9 @@ public:
     void match(Plasma::RunnerContext &);
     void run(const Plasma::RunnerContext &, const Plasma::QueryMatch &);
     
+public slots:
+    void reinitPasswords(const QString &path);
+
 protected:
     void init();
     void initPasswords();
@@ -40,7 +45,9 @@ protected:
 private:
     QDir baseDir;
     int timeout;
+    QReadWriteLock lock;
     QList<QString> passwords;
+    QFileSystemWatcher watcher;
 };
 
 #endif
