@@ -103,7 +103,7 @@ void Pass::match(Plasma::RunnerContext &context)
 
     lock.lockForRead();
     Q_FOREACH (auto password, passwords) {
-        QRegularExpression re(".*" + input + ".*");
+        QRegularExpression re(".*" + input + ".*", QRegularExpression::CaseInsensitiveOption);
         if (re.match(password).hasMatch()) {
             Plasma::QueryMatch match(this);
             if (input.length() == password.length()) {
