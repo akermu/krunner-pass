@@ -61,6 +61,12 @@ void Pass::init() {
         }
     }
 
+    this->passOtpIdentifier = "totp::";
+    auto passOtpIdentifier = getenv("PASSWORD_STORE_OTP_IDENTIFIER");
+    if (passOtpIdentifier != nullptr) {
+        this->passOtpIdentifier = passOtpIdentifier;
+    }
+
     initPasswords();
 
     connect(&watcher, SIGNAL(directoryChanged(QString)), this, SLOT(reinitPasswords(QString)));
@@ -125,11 +131,6 @@ void Pass::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &m
 {
     Q_UNUSED(context);
 
-    this->passOtpIdentifier = "totp::";
-    auto passOtpIdentifier = getenv("PASSWORD_STORE_OTP_IDENTIFIER");
-    if (passOtpIdentifier != nullptr) {
-        this->passOtpIdentifier = passOtpIdentifier;
-    }
     auto isOtp = match.text().split('/').filter(QRegularExpression("^" + QRegularExpression::escape(this->passOtpIdentifier) + ".*")).size() > 0;
 
     auto ret = isOtp ?
