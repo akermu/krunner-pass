@@ -44,6 +44,7 @@ protected:
 
 private:
     QDir baseDir;
+    QString passOtpIdentifier;
     int timeout;
     QReadWriteLock lock;
     QList<QString> passwords;
