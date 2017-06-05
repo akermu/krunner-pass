@@ -131,7 +131,8 @@ void Pass::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &m
 {
     Q_UNUSED(context);
 
-    auto isOtp = match.text().split('/').filter(QRegularExpression("^" + QRegularExpression::escape(this->passOtpIdentifier) + ".*")).size() > 0;
+    auto regexp = QRegularExpression("^" + QRegularExpression::escape(this->passOtpIdentifier) + ".*");
+    auto isOtp = match.text().split('/').filter(regexp).size() > 0;
 
     auto ret = isOtp ?
         QProcess::execute(QString("pass otp -c ") + match.text()) :
