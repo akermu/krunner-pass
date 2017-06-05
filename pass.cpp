@@ -21,6 +21,7 @@
 #include <QDirIterator>
 #include <QProcess>
 #include <QRegularExpression>
+#include <QTimer>
 
 #include <stdlib.h>
 
@@ -139,9 +140,10 @@ void Pass::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &m
         QProcess::execute(QString("pass -c ") + match.text());
     if (ret == 0) {
         QString msg = i18n("Password %1 copied to clipboard for %2 seconds", match.text(), timeout);
-        KNotification::event("password-unlocked", "Pass", msg,
-                             "object-unlocked", nullptr, KNotification::CloseOnTimeout,
-                             "krunner_pass");
+        auto notification = KNotification::event("password-unlocked", "Pass", msg,
+                                                 "object-unlocked", nullptr, KNotification::CloseOnTimeout,
+                                                 "krunner_pass");
+        QTimer::singleShot(timeout * 1000, notification, SLOT(quit));
     }
 }
 
