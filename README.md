@@ -3,6 +3,12 @@ Krunner pass
 
 Integrates [krunner](https://userbase.kde.org/Plasma/Krunner) with [pass](https://www.passwordstore.org).
 
+## Use with [pass-otp](https://github.com/tadfisher/pass-otp)
+
+To use with pass-otp, use the identifier "totp::" in the filename or file path of the otp password file.
+
+Alternatively, set $PASSWORD_STORE_OTP_IDENTIFIER to overwrite the identifier string.
+
 Build and Installation
 ======================
 
