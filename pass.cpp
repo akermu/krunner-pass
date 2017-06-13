@@ -136,8 +136,8 @@ void Pass::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &m
     auto isOtp = match.text().split('/').filter(regexp).size() > 0;
 
     auto ret = isOtp ?
-        QProcess::execute(QString("pass otp -c ") + match.text()) :
-        QProcess::execute(QString("pass -c ") + match.text());
+            QProcess::execute(QString("pass"), QStringList() << "otp" << "-c" << match.text()) :
+            QProcess::execute(QString("pass"), QStringList() << "-c" << match.text());
     if (ret == 0) {
         QString msg = i18n("Password %1 copied to clipboard for %2 seconds", match.text(), timeout);
         auto notification = KNotification::event("password-unlocked", "Pass", msg,
