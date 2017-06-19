@@ -15,19 +15,26 @@
  *  along with this library; see the file LICENSE.                            *
  *  If not, see <http://www.gnu.org/licenses/>.                               *
  *****************************************************************************/
+#include <KSharedConfig>
 #include <KLocalizedString>
 #include <knotification.h>
 
+#include <QAction>
 #include <QDirIterator>
 #include <QProcess>
 #include <QRegularExpression>
 #include <QTimer>
+#include <QMessageBox>
+#include <QClipboard>
+#include <QDebug> //FIXME: delet this
 
 #include <stdlib.h>
 
 #include "pass.h"
+#include "config/pass_config.h"
 
 using namespace std;
+
 
 Pass::Pass(QObject *parent, const QVariantList &args)
     : Plasma::AbstractRunner(parent, args)
@@ -40,11 +47,47 @@ Pass::Pass(QObject *parent, const QVariantList &args)
     setPriority(HighestPriority);
     auto comment = i18n("Looks for a password matching :q:. Pressing ENTER copies the password to the clipboard.");
     setDefaultSyntax(Plasma::RunnerSyntax(QString(":q:"), comment));
+    
+    reloadConfiguration();
 }
 
 Pass::~Pass() {}
 
-void Pass::init() {
+void Pass::reloadConfiguration()
+{
+    actions().clear();
+    orderedActions.clear();
+    
+    KConfigGroup cfg = config();
+    this->showActions = cfg.readEntry(Config::showActions, false);
+    
+    if (showActions) {
+        auto configActions = cfg.group(Config::Group::Actions);
+        auto configIcons = cfg.group(Config::Group::Icons);
+        auto configOrders = cfg.group(Config::Group::Orders);
+        
+        // Create actions for every additional field
+        for (int i = 0; i < configOrders.keyList().count(); i++) {
+            QString key = configOrders.readEntry(QString::number(i));
+            QString icon = configIcons.readEntry(key);
+            
+            QAction *act = addAction(key, QIcon::fromTheme(configIcons.readEntry(key)), key);
+            act->setData(configActions.readEntry(key));
+            this->orderedActions << act;
+        }
+            
+    }
+    
+    if (cfg.readEntry(Config::showFileContentAction, false)) {
+        QAction *act = addAction(Config::showFileContentAction, QIcon::fromTheme("document-new"), 
+                  i18n("Show password file contents"));
+        act->setData(Config::showFileContentAction);
+        this->orderedActions << act;
+    }
+}
+
+void Pass::init() 
+{
     this->baseDir = QDir(QDir::homePath() + "/.password-store");
     auto baseDir = getenv("PASSWORD_STORE_DIR");
     if (baseDir != nullptr) {
@@ -132,19 +175,75 @@ void Pass::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &m
 {
     Q_UNUSED(context);
 
-    auto regexp = QRegularExpression("^" + QRegularExpression::escape(this->passOtpIdentifier) + ".*");
-    auto isOtp = match.text().split('/').filter(regexp).size() > 0;
+    if (match.selectedAction() != nullptr) {
+        const auto data = match.selectedAction()->data().toString();
+        
+        QProcess *passProcess = new QProcess();
+        passProcess->start("pass", QStringList() << match.text());
+        connect(passProcess, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+                [=](int exitCode, QProcess::ExitStatus exitStatus) {
+                    Q_UNUSED(exitCode)
+                    Q_UNUSED(exitStatus)
+                    
+                    const auto output = passProcess->readAllStandardOutput();
+                    
+                    if (data == Config::showFileContentAction) {
+                        QMessageBox::information(nullptr, match.text(), output);
+                    } else {
+                        QRegularExpression re(data, QRegularExpression::MultilineOption);
+                        auto matchre = re.match(output);
+                        
+                        if (matchre.hasMatch()) {
+                            QClipboard *cb = QApplication::clipboard();
+                            cb->setText(matchre.captured(1));
+                            
+                            this->showNotification(match.text(), match.selectedAction()->text());
+                            QTimer::singleShot(timeout * 1000, cb, [cb]() {
+                                cb->clear();
+                            });
+                        } else {
+                            // Show some information to understand what went wrong.
+                            qInfo() << "Regexp: " << data;
+                            qInfo() << "Is regexp valid? " << re.isValid();
+                            qInfo() << "The file: " << match.text();
+                            // qInfo() << "Content: " << output;
+                        }
+                    }
 
-    auto ret = isOtp ?
-            QProcess::execute(QString("pass"), QStringList() << "otp" << "-c" << match.text()) :
-            QProcess::execute(QString("pass"), QStringList() << "-c" << match.text());
-    if (ret == 0) {
-        QString msg = i18n("Password %1 copied to clipboard for %2 seconds", match.text(), timeout);
-        auto notification = KNotification::event("password-unlocked", "Pass", msg,
-                                                 "object-unlocked", nullptr, KNotification::CloseOnTimeout,
-                                                 "krunner_pass");
-        QTimer::singleShot(timeout * 1000, notification, SLOT(quit));
+                    passProcess->close();
+                    passProcess->deleteLater();
+        });
+    } else {
+        auto regexp = QRegularExpression("^" + QRegularExpression::escape(this->passOtpIdentifier) + ".*");
+        auto isOtp = match.text().split('/').filter(regexp).size() > 0;
+    
+        auto ret = isOtp ?
+                QProcess::execute(QString("pass"), QStringList() << "otp" << "-c" << match.text()) :
+                QProcess::execute(QString("pass"), QStringList() << "-c" << match.text());
+        if (ret == 0) {
+            this->showNotification(match.text());
+        }
     }
+}
+
+QList<QAction *> Pass::actionsForMatch(const Plasma::QueryMatch &match)
+{
+    Q_UNUSED(match)
+    
+    if (showActions)
+        return this->orderedActions;
+    
+    return QList<QAction *>();
+}
+
+void Pass::showNotification(const QString &text, const QString &actionName /* = "" */)
+{
+    QString msgPrefix = actionName.isEmpty() ? "":actionName + i18n(" of ");
+    QString msg = i18n("Password %1 copied to clipboard for %2 seconds", text, timeout);
+    auto notification = KNotification::event("password-unlocked", "Pass", msgPrefix + msg,
+                                            "object-unlocked", nullptr, KNotification::CloseOnTimeout,
+                                            "krunner_pass");
+    QTimer::singleShot(timeout * 1000, notification, SLOT(quit));
 }
 
 K_EXPORT_PLASMA_RUNNER(pass, Pass)

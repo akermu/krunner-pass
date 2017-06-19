@@ -1,4 +1,4 @@
-/******************************************************************************
+ /******************************************************************************
  *  Copyright (C) 2017 by Lukas Fürmetz <fuermetz@mailbox.org>                *
  *                                                                            *
  *  This library is free software; you can redistribute it and/or modify      *
@@ -16,47 +16,65 @@
  *  If not, see <http://www.gnu.org/licenses/>.                               *
  *****************************************************************************/
 
-#ifndef PASS_H
-#define PASS_H
+#ifndef PASS_CONFIG_H
+#define PASS_CONFIG_H
 
-#include <KRunner/AbstractRunner>
-#include <QDir>
-#include <QReadWriteLock>
-#include <QFileSystemWatcher>
+#include "ui_pass_config.h"
+#include <KCModule>
+#include <KConfigGroup>
 
-class Pass : public Plasma::AbstractRunner
+
+struct Config {
+    constexpr static const char *showActions = "showAdditionalActions";
+    constexpr static const char *showFileContentAction = "showFullFileContentAction";
+    struct Group {
+        constexpr static const char *Actions = "AdditionalActions";
+        constexpr static const char *Icons = "AdditionalActionsIcons";
+        constexpr static const char *Orders = "AdditionalActionsOrder";
+    };
+};
+
+
+struct PassAction {
+    QString name, icon, regex;
+};
+Q_DECLARE_METATYPE(PassAction)
+
+
+class PassConfigForm : public QWidget, public Ui::PassConfigUi
 {
     Q_OBJECT
 
 public:
-    Pass(QObject *parent, const QVariantList &args);
-    ~Pass();
-
-    void match(Plasma::RunnerContext &) override;
-    void run(const Plasma::RunnerContext &, const Plasma::QueryMatch &) override;
-    QList<QAction *> actionsForMatch(const Plasma::QueryMatch &) override;
-    void reloadConfiguration() override;
+    explicit PassConfigForm(QWidget* parent);
     
+    void addPassAction(const QString &, const QString &, const QString &, bool isNew = true);
+    void clearPassActions();
+    void clearInputs();
     
-public slots:
-    void reinitPasswords(const QString &path);
-
-protected:
-    void init() override;
-    void initPasswords();
-    void showNotification(const QString &, const QString & = "");
-
-private:
-    QDir baseDir;
-    QString passOtpIdentifier;
-    int timeout;
-    QReadWriteLock lock;
-    QList<QString> passwords;
-    QFileSystemWatcher watcher;
+    QVector<PassAction> passActions();
     
-    bool showActions;
-    QList<QAction *> orderedActions;
-    
+signals:
+    void passActionRemoved();
+    void passActionAdded();
 };
+
+
+class PassConfig : public KCModule
+{
+    Q_OBJECT
+
+public:
+    explicit PassConfig(QWidget* parent = 0, const QVariantList& args = QVariantList());
+    
+public Q_SLOTS:
+    void save();
+    void load();
+    void defaults();
+    
+private:
+    PassConfigForm *ui;
+};
+
 
 #endif
