@@ -26,7 +26,6 @@
 #include <QTimer>
 #include <QMessageBox>
 #include <QClipboard>
-#include <QDebug> //FIXME: delet this
 
 #include <stdlib.h>
 
