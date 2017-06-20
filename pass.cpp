@@ -26,6 +26,7 @@
 #include <QTimer>
 #include <QMessageBox>
 #include <QClipboard>
+#include <QDebug>
 
 #include <stdlib.h>
 
@@ -62,16 +63,14 @@ void Pass::reloadConfiguration()
     
     if (showActions) {
         auto configActions = cfg.group(Config::Group::Actions);
-        auto configIcons = cfg.group(Config::Group::Icons);
-        auto configOrders = cfg.group(Config::Group::Orders);
         
         // Create actions for every additional field
-        for (int i = 0; i < configOrders.keyList().count(); i++) {
-            QString key = configOrders.readEntry(QString::number(i));
-            QString icon = configIcons.readEntry(key);
+        for (int i = 0; i < configActions.keyList().count(); i++) {
+            QString passStr = configActions.readEntry(QString::number(i));
+            PassAction passAction = PassAction::fromString(passStr);
             
-            QAction *act = addAction(key, QIcon::fromTheme(configIcons.readEntry(key)), key);
-            act->setData(configActions.readEntry(key));
+            QAction *act = addAction(passAction.name, QIcon::fromTheme(passAction.icon), passAction.name);
+            act->setData(passAction.regex);
             this->orderedActions << act;
         }
             

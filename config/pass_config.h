@@ -29,16 +29,27 @@ struct Config {
     constexpr static const char *showFileContentAction = "showFullFileContentAction";
     struct Group {
         constexpr static const char *Actions = "AdditionalActions";
-        constexpr static const char *Icons = "AdditionalActionsIcons";
-        constexpr static const char *Orders = "AdditionalActionsOrder";
     };
 };
 
 
 struct PassAction {
     QString name, icon, regex;
-};
-Q_DECLARE_METATYPE(PassAction)
+    
+    // Using QDataStream doesn't work with KConfig (at least I was not able to get it work)
+    // So I'm just implementing my own serialization function for this struct
+    QString toString() 
+    {
+        return QString("PassAction {\"%1\", \"%2\", \"%3\"}").arg(name).arg(icon).arg(regex);
+    }
+    
+    static PassAction fromString(const QString &str)
+    {
+        QRegularExpression re("PassAction {\"(.+?)\", \"(.+?)\", \"(.+?)\"}");
+        auto match = re.match(str);
+        return PassAction {match.captured(1), match.captured(2), match.captured(3)};
+    }
+}; Q_DECLARE_METATYPE(PassAction)
 
 
 class PassConfigForm : public QWidget, public Ui::PassConfigUi

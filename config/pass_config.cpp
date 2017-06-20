@@ -26,6 +26,7 @@
 K_PLUGIN_FACTORY(PassConfigFactory, registerPlugin<PassConfig>("kcm_krunner_pass");)
 
 
+
 PassConfigForm::PassConfigForm(QWidget *parent) : QWidget(parent)
 {
     setupUi(this);
@@ -114,6 +115,7 @@ void PassConfigForm::clearInputs()
     this->lineRegEx->clear();
 }
 
+
 PassConfig::PassConfig(QWidget *parent, const QVariantList &args) :
         KCModule(parent, args)
 {
@@ -149,12 +151,11 @@ void PassConfig::load()
     this->ui->clearPassActions();
     
     auto configActions = passCfg.group(Config::Group::Actions);
-    auto configOrders = passCfg.group(Config::Group::Orders);
-    auto configIcons = passCfg.group(Config::Group::Icons);
-    for (int i = 0; i < configOrders.keyList().count(); i++) {
-        QString key = configOrders.readEntry(QString::number(i));
-        QString icon = configIcons.readEntry(key);
-        this->ui->addPassAction(key, icon, configActions.readEntry(key), false);
+    for (int i = 0; i < configActions.keyList().count(); i++) {
+        QString passStr = configActions.readEntry(QString::number(i));
+        auto passAction = PassAction::fromString(passStr);
+
+        this->ui->addPassAction(passAction.name, passAction.icon, passAction.regex, false);
     }
         
     emit changed(false);
@@ -177,16 +178,11 @@ void PassConfig::save()
     
     
     passCfg.deleteGroup(Config::Group::Actions);
-    passCfg.deleteGroup(Config::Group::Icons);
-    passCfg.deleteGroup(Config::Group::Orders);
-    
+
     if (showActions) {
         int i = 0;
-        for (auto act: this->ui->passActions()) {
-            passCfg.group(Config::Group::Actions).writeEntry(act.name, act.regex);
-            passCfg.group(Config::Group::Icons).writeEntry(act.name, act.icon);
-            passCfg.group(Config::Group::Orders).writeEntry(QString::number(i++), act.name);
-        }
+        for (PassAction act: this->ui->passActions())
+            passCfg.group(Config::Group::Actions).writeEntry(QString::number(i++), act.toString());
     }
 
     emit changed(false);
