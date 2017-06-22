@@ -40,14 +40,14 @@ Pass::Pass(QObject *parent, const QVariantList &args)
     : Plasma::AbstractRunner(parent, args)
 {
     Q_UNUSED(args);
-    
+
     // General runner configuration
     setObjectName(QString("Pass"));
     setSpeed(AbstractRunner::NormalSpeed);
     setPriority(HighestPriority);
     auto comment = i18n("Looks for a password matching :q:. Pressing ENTER copies the password to the clipboard.");
     setDefaultSyntax(Plasma::RunnerSyntax(QString(":q:"), comment));
-    
+
     reloadConfiguration();
 }
 
@@ -57,34 +57,34 @@ void Pass::reloadConfiguration()
 {
     actions().clear();
     orderedActions.clear();
-    
+
     KConfigGroup cfg = config();
     this->showActions = cfg.readEntry(Config::showActions, false);
-    
+
     if (showActions) {
         auto configActions = cfg.group(Config::Group::Actions);
-        
+
         // Create actions for every additional field
         for (int i = 0; i < configActions.keyList().count(); i++) {
             QString passStr = configActions.readEntry(QString::number(i));
             PassAction passAction = PassAction::fromString(passStr);
-            
+
             QAction *act = addAction(passAction.name, QIcon::fromTheme(passAction.icon), passAction.name);
             act->setData(passAction.regex);
             this->orderedActions << act;
         }
-            
+
     }
-    
+
     if (cfg.readEntry(Config::showFileContentAction, false)) {
-        QAction *act = addAction(Config::showFileContentAction, QIcon::fromTheme("document-new"), 
+        QAction *act = addAction(Config::showFileContentAction, QIcon::fromTheme("document-new"),
                   i18n("Show password file contents"));
         act->setData(Config::showFileContentAction);
         this->orderedActions << act;
     }
 }
 
-void Pass::init() 
+void Pass::init()
 {
     this->baseDir = QDir(QDir::homePath() + "/.password-store");
     auto baseDir = getenv("PASSWORD_STORE_DIR");
@@ -175,26 +175,26 @@ void Pass::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &m
 
     if (match.selectedAction() != nullptr) {
         const auto data = match.selectedAction()->data().toString();
-        
+
         QProcess *passProcess = new QProcess();
         passProcess->start("pass", QStringList() << match.text());
         connect(passProcess, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
                 [=](int exitCode, QProcess::ExitStatus exitStatus) {
                     Q_UNUSED(exitCode)
                     Q_UNUSED(exitStatus)
-                    
+
                     const auto output = passProcess->readAllStandardOutput();
-                    
+
                     if (data == Config::showFileContentAction) {
                         QMessageBox::information(nullptr, match.text(), output);
                     } else {
                         QRegularExpression re(data, QRegularExpression::MultilineOption);
                         auto matchre = re.match(output);
-                        
+
                         if (matchre.hasMatch()) {
                             QClipboard *cb = QApplication::clipboard();
                             cb->setText(matchre.captured(1));
-                            
+
                             this->showNotification(match.text(), match.selectedAction()->text());
                             QTimer::singleShot(timeout * 1000, cb, [cb]() {
                                 cb->clear();
@@ -214,7 +214,7 @@ void Pass::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &m
     } else {
         auto regexp = QRegularExpression("^" + QRegularExpression::escape(this->passOtpIdentifier) + ".*");
         auto isOtp = match.text().split('/').filter(regexp).size() > 0;
-    
+
         auto ret = isOtp ?
                 QProcess::execute(QString("pass"), QStringList() << "otp" << "-c" << match.text()) :
                 QProcess::execute(QString("pass"), QStringList() << "-c" << match.text());
@@ -227,10 +227,10 @@ void Pass::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &m
 QList<QAction *> Pass::actionsForMatch(const Plasma::QueryMatch &match)
 {
     Q_UNUSED(match)
-    
+
     if (showActions)
         return this->orderedActions;
-    
+
     return QList<QAction *>();
 }
 

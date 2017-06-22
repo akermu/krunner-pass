@@ -35,14 +35,14 @@ struct Config {
 
 struct PassAction {
     QString name, icon, regex;
-    
+
     // Using QDataStream doesn't work with KConfig (at least I was not able to get it work)
     // So I'm just implementing my own serialization function for this struct
-    QString toString() 
+    QString toString()
     {
         return QString("PassAction {\"%1\", \"%2\", \"%3\"}").arg(name).arg(icon).arg(regex);
     }
-    
+
     static PassAction fromString(const QString &str)
     {
         QRegularExpression re("PassAction {\"(.+?)\", \"(.+?)\", \"(.+?)\"}");
@@ -58,13 +58,13 @@ class PassConfigForm : public QWidget, public Ui::PassConfigUi
 
 public:
     explicit PassConfigForm(QWidget* parent);
-    
+
     void addPassAction(const QString &, const QString &, const QString &, bool isNew = true);
     void clearPassActions();
     void clearInputs();
-    
+
     QVector<PassAction> passActions();
-    
+
 signals:
     void passActionRemoved();
     void passActionAdded();
@@ -77,12 +77,12 @@ class PassConfig : public KCModule
 
 public:
     explicit PassConfig(QWidget* parent = 0, const QVariantList& args = QVariantList());
-    
+
 public Q_SLOTS:
     void save();
     void load();
     void defaults();
-    
+
 private:
     PassConfigForm *ui;
 };
