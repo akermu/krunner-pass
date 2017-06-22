@@ -31,7 +31,7 @@
 #include <stdlib.h>
 
 #include "pass.h"
-#include "config/pass_config.h"
+#include "config.h"
 
 using namespace std;
 

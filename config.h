@@ -16,10 +16,10 @@
  *  If not, see <http://www.gnu.org/licenses/>.                               *
  *****************************************************************************/
 
-#ifndef PASS_CONFIG_H
-#define PASS_CONFIG_H
+#ifndef CONFIG_H
+#define CONFIG_H
 
-#include "ui_pass_config.h"
+#include "ui_config.h"
 #include <KCModule>
 #include <KConfigGroup>
 

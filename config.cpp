@@ -21,7 +21,7 @@
 #include <krunner/abstractrunner.h>
 #include <QToolButton>
 
-#include "pass_config.h"
+#include "config.h"
 
 K_PLUGIN_FACTORY(PassConfigFactory, registerPlugin<PassConfig>("kcm_krunner_pass");)
 
@@ -201,4 +201,4 @@ void PassConfig::defaults()
 }
 
 
-#include "pass_config.moc"
+#include "config.moc"

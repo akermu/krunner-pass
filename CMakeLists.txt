@@ -17,10 +17,10 @@ set(krunner_pass_SRCS
 )
 
 set(kcm_krunner_pass_SRCS
-    config/pass_config.cpp
+    config.cpp
 )
 
-ki18n_wrap_ui(kcm_krunner_pass_SRCS config/pass_config.ui)
+ki18n_wrap_ui(kcm_krunner_pass_SRCS config.ui)
 add_library(kcm_krunner_pass MODULE ${kcm_krunner_pass_SRCS})
 target_link_libraries(kcm_krunner_pass
     Qt5::Core
@@ -43,5 +43,5 @@ target_link_libraries(krunner_pass KF5::Runner Qt5::Widgets
 add_dependencies(krunner_pass kcm_krunner_pass)
 
 install(TARGETS krunner_pass kcm_krunner_pass DESTINATION ${PLUGIN_INSTALL_DIR})
-install(FILES plasma-runner-pass.desktop config/plasma-runner-pass_config.desktop DESTINATION ${SERVICES_INSTALL_DIR})
+install(FILES plasma-runner-pass.desktop plasma-runner-pass_config.desktop DESTINATION ${SERVICES_INSTALL_DIR})
 install(FILES krunner_pass.notifyrc DESTINATION ${KNOTIFYRC_INSTALL_DIR})
