@@ -67,7 +67,8 @@ void Pass::reloadConfiguration()
             QString passStr = configActions.readEntry(QString::number(i));
             PassAction passAction = PassAction::fromString(passStr);
 
-            QAction *act = addAction(passAction.name, QIcon::fromTheme(passAction.icon), passAction.name);
+            auto icon = QIcon::fromTheme(passAction.icon, QIcon::fromTheme("object-unlocked"));
+            QAction *act = addAction(passAction.name, icon , passAction.name);
             act->setData(passAction.regex);
             this->orderedActions << act;
         }
