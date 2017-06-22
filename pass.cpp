@@ -63,9 +63,10 @@ void Pass::reloadConfiguration()
         auto configActions = cfg.group(Config::Group::Actions);
 
         // Create actions for every additional field
-        for (int i = 0; i < configActions.keyList().count(); i++) {
-            QString passStr = configActions.readEntry(QString::number(i));
-            PassAction passAction = PassAction::fromString(passStr);
+        auto groups = configActions.groupList();
+        Q_FOREACH (auto name, groups) {
+            auto group = configActions.group(name);
+            auto passAction = PassAction::fromConfig(group);
 
             auto icon = QIcon::fromTheme(passAction.icon, QIcon::fromTheme("object-unlocked"));
             QAction *act = addAction(passAction.name, icon , passAction.name);

@@ -30,24 +30,32 @@ struct Config {
     struct Group {
         constexpr static const char *Actions = "AdditionalActions";
     };
+    struct Entry {
+        constexpr static const char *Name = "Name";
+        constexpr static const char *Icon = "Icon";
+        constexpr static const char *Regex = "Regex";
+    };
 };
 
 
 struct PassAction {
     QString name, icon, regex;
 
-    // Using QDataStream doesn't work with KConfig (at least I was not able to get it work)
-    // So I'm just implementing my own serialization function for this struct
-    QString toString()
+    void writeToConfig(KConfigGroup &group)
     {
-        return QString("PassAction {\"%1\", \"%2\", \"%3\"}").arg(name).arg(icon).arg(regex);
+        group.writeEntry(Config::Entry::Name, name);
+        group.writeEntry(Config::Entry::Icon, icon);
+        group.writeEntry(Config::Entry::Regex, regex);
     }
 
-    static PassAction fromString(const QString &str)
+    static PassAction fromConfig(const KConfigGroup &group)
     {
-        QRegularExpression re("PassAction {\"(.+?)\", \"(.+?)\", \"(.+?)\"}");
-        auto match = re.match(str);
-        return PassAction {match.captured(1), match.captured(2), match.captured(3)};
+        PassAction action;
+        action.name = group.readEntry(Config::Entry::Name);
+        action.icon = group.readEntry(Config::Entry::Icon);
+        action.regex = group.readEntry(Config::Entry::Regex);
+
+        return action;
     }
 }; Q_DECLARE_METATYPE(PassAction)
 

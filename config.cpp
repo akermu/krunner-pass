@@ -150,10 +150,11 @@ void PassConfig::load()
     // Load saved actions
     this->ui->clearPassActions();
 
-    auto configActions = passCfg.group(Config::Group::Actions);
-    for (int i = 0; i < configActions.keyList().count(); i++) {
-        QString passStr = configActions.readEntry(QString::number(i));
-        auto passAction = PassAction::fromString(passStr);
+    auto actionGroup = passCfg.group(Config::Group::Actions);
+    auto groups = actionGroup.groupList();
+    Q_FOREACH (auto name, groups) {
+        auto group = actionGroup.group(name);
+        auto passAction = PassAction::fromConfig(group);
 
         this->ui->addPassAction(passAction.name, passAction.icon, passAction.regex, false);
     }
@@ -181,8 +182,10 @@ void PassConfig::save()
 
     if (showActions) {
         int i = 0;
-        for (PassAction act: this->ui->passActions())
-            passCfg.group(Config::Group::Actions).writeEntry(QString::number(i++), act.toString());
+        for (PassAction act: this->ui->passActions()) {
+            auto group = passCfg.group(Config::Group::Actions).group(QString::number(i++));
+            act.writeToConfig(group);
+        }
     }
 
     emit changed(false);
