@@ -32,15 +32,19 @@ public:
     Pass(QObject *parent, const QVariantList &args);
     ~Pass();
 
-    void match(Plasma::RunnerContext &);
-    void run(const Plasma::RunnerContext &, const Plasma::QueryMatch &);
+    void match(Plasma::RunnerContext &) override;
+    void run(const Plasma::RunnerContext &, const Plasma::QueryMatch &) override;
+    QList<QAction *> actionsForMatch(const Plasma::QueryMatch &) override;
+    void reloadConfiguration() override;
+    
     
 public slots:
     void reinitPasswords(const QString &path);
 
 protected:
-    void init();
+    void init() override;
     void initPasswords();
+    void showNotification(const QString &, const QString & = "");
 
 private:
     QDir baseDir;
@@ -49,6 +53,10 @@ private:
     QReadWriteLock lock;
     QList<QString> passwords;
     QFileSystemWatcher watcher;
+    
+    bool showActions;
+    QList<QAction *> orderedActions;
+    
 };
 
 #endif
