@@ -47,8 +47,6 @@ Pass::Pass(QObject *parent, const QVariantList &args)
     setPriority(HighestPriority);
     auto comment = i18n("Looks for a password matching :q:. Pressing ENTER copies the password to the clipboard.");
     setDefaultSyntax(Plasma::RunnerSyntax(QString(":q:"), comment));
-
-    reloadConfiguration();
 }
 
 Pass::~Pass() {}
@@ -86,6 +84,8 @@ void Pass::reloadConfiguration()
 
 void Pass::init()
 {
+    reloadConfiguration();
+
     this->baseDir = QDir(QDir::homePath() + "/.password-store");
     auto baseDir = getenv("PASSWORD_STORE_DIR");
     if (baseDir != nullptr) {
