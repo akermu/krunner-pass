@@ -1,5 +1,5 @@
 /******************************************************************************
- *  Copyright (C) 2016 by Dominik Schreiber <dev@dominikschreiber.de>         *
+ *  Copyright (C) 2017 by Lukas Fürmetz <fuermetz@mailbox.org>                *
  *                                                                            *
  *  This library is free software; you can redistribute it and/or modify      *
  *  it under the terms of the GNU General Public License as published         *
