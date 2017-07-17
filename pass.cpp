@@ -78,7 +78,7 @@ void Pass::reloadConfiguration()
 
     if (cfg.readEntry(Config::showFileContentAction, false)) {
         QAction *act = addAction(Config::showFileContentAction, QIcon::fromTheme("document-new"),
-                  i18n("Show password file contents"));
+                                 i18n("Show password file contents"));
         act->setData(Config::showFileContentAction);
         this->orderedActions << act;
     }
@@ -171,81 +171,80 @@ void Pass::match(Plasma::RunnerContext &context)
     context.addMatches(matches);
 }
 
+void Pass::clip(const QString &msg)
+{
+    QClipboard *cb = QApplication::clipboard();
+    cb->setText(msg);
+    QTimer::singleShot(timeout * 1000, cb, [cb]() {
+            cb->clear();
+        });
+}
+
 void Pass::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match)
 {
     Q_UNUSED(context);
+    auto regexp = QRegularExpression("^" + QRegularExpression::escape(this->passOtpIdentifier) + ".*");
+    auto isOtp = match.text().split('/').filter(regexp).size() > 0;
 
-    if (match.selectedAction() != nullptr) {
-        const auto data = match.selectedAction()->data().toString();
+    QProcess *pass = new QProcess();
+    QStringList args;
+    if (isOtp) {
+        args << "otp" << "show" << match.text();
+    } else {
+        args << "show" << match.text();
+    }
+    pass->start("pass", args);
 
-        QProcess *passProcess = new QProcess();
-        passProcess->start("pass", QStringList() << match.text());
-        connect(passProcess, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
-                [=](int exitCode, QProcess::ExitStatus exitStatus) {
-                    Q_UNUSED(exitCode)
-                    Q_UNUSED(exitStatus)
+    connect(pass, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+            [=](int exitCode, QProcess::ExitStatus exitStatus) {
+                Q_UNUSED(exitCode);
+                Q_UNUSED(exitStatus);
 
-                    const auto output = passProcess->readAllStandardOutput();
+                if (exitCode == 0) {
 
-                    if (data == Config::showFileContentAction) {
-                        QMessageBox::information(nullptr, match.text(), output);
-                    } else {
-                        QRegularExpression re(data, QRegularExpression::MultilineOption);
-                        auto matchre = re.match(output);
+                    const auto output = pass->readAllStandardOutput();
 
-                        if (matchre.hasMatch()) {
-                            QClipboard *cb = QApplication::clipboard();
-                            cb->setText(matchre.captured(1));
+                    if (match.selectedAction() != nullptr) {
+                        const auto data = match.selectedAction()->data().toString();
 
-                            this->showNotification(match.text(), match.selectedAction()->text());
-                            QTimer::singleShot(timeout * 1000, cb, [cb]() {
-                                cb->clear();
-                            });
+                        if (data == Config::showFileContentAction) {
+                            QMessageBox::information(nullptr, match.text(), output);
                         } else {
-                            // Show some information to understand what went wrong.
-                            qInfo() << "Regexp: " << data;
-                            qInfo() << "Is regexp valid? " << re.isValid();
-                            qInfo() << "The file: " << match.text();
-                            // qInfo() << "Content: " << output;
+                            QRegularExpression re(data, QRegularExpression::MultilineOption);
+                            auto matchre = re.match(output);
+
+                            if (matchre.hasMatch()) {
+                                clip(matchre.captured(1));
+                                this->showNotification(match.text(), match.selectedAction()->text());
+                            } else {
+                                // Show some information to understand what went wrong.
+                                qInfo() << "Regexp: " << data;
+                                qInfo() << "Is regexp valid? " << re.isValid();
+                                qInfo() << "The file: " << match.text();
+                                // qInfo() << "Content: " << output;
+                            }
+                        }
+                    } else {
+                        auto string = QString::fromUtf8(output.data());
+                        auto lines = string.split('\n', QString::SkipEmptyParts);
+                        if (lines.count() > 0) {
+                            clip(lines[0]);
+                            this->showNotification(match.text());
                         }
                     }
+                }
 
-                    passProcess->close();
-                    passProcess->deleteLater();
-        });
-    } else {
-        auto regexp = QRegularExpression("^" + QRegularExpression::escape(this->passOtpIdentifier) + ".*");
-        auto isOtp = match.text().split('/').filter(regexp).size() > 0;
-
-        QProcess pass;
-        QStringList args;
-        if (isOtp) {
-            args << "otp" << "show" << match.text();
-        } else {
-            args << "show" << match.text();
-        }
-        pass.start("pass", args);
-        pass.waitForFinished(-1);
-        auto output = pass.readAllStandardOutput();
-        auto string = QString::fromUtf8(output.data());
-        auto lines = string.split('\n', QString::SkipEmptyParts);
-        if (lines.count() > 0) {
-            QClipboard *cb = QApplication::clipboard();
-            cb->setText(lines[0]);
-            this->showNotification(match.text());
-            QTimer::singleShot(timeout * 1000, cb, [cb]() {
-                    cb->clear();
-                });
-        }
-    }
+                pass->close();
+                pass->deleteLater();
+            });
 }
 
 QList<QAction *> Pass::actionsForMatch(const Plasma::QueryMatch &match)
 {
     Q_UNUSED(match)
 
-    if (showActions)
-        return this->orderedActions;
+        if (showActions)
+            return this->orderedActions;
 
     return QList<QAction *>();
 }
@@ -255,8 +254,8 @@ void Pass::showNotification(const QString &text, const QString &actionName /* = 
     QString msgPrefix = actionName.isEmpty() ? "":actionName + i18n(" of ");
     QString msg = i18n("Password %1 copied to clipboard for %2 seconds", text, timeout);
     auto notification = KNotification::event("password-unlocked", "Pass", msgPrefix + msg,
-                                            "object-unlocked", nullptr, KNotification::CloseOnTimeout,
-                                            "krunner_pass");
+                                             "object-unlocked", nullptr, KNotification::CloseOnTimeout,
+                                             "krunner_pass");
     QTimer::singleShot(timeout * 1000, notification, SLOT(quit));
 }
 

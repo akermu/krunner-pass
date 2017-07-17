@@ -32,6 +32,7 @@ public:
     Pass(QObject *parent, const QVariantList &args);
     ~Pass();
 
+    void clip(const QString &msg);
     void match(Plasma::RunnerContext &) override;
     void run(const Plasma::RunnerContext &, const Plasma::QueryMatch &) override;
     QList<QAction *> actionsForMatch(const Plasma::QueryMatch &) override;
