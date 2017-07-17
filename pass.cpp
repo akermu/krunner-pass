@@ -217,11 +217,25 @@ void Pass::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &m
         auto regexp = QRegularExpression("^" + QRegularExpression::escape(this->passOtpIdentifier) + ".*");
         auto isOtp = match.text().split('/').filter(regexp).size() > 0;
 
-        auto ret = isOtp ?
-                QProcess::execute(QString("pass"), QStringList() << "otp" << "-c" << match.text()) :
-                QProcess::execute(QString("pass"), QStringList() << "-c" << match.text());
-        if (ret == 0) {
+        QProcess pass;
+        QStringList args;
+        if (isOtp) {
+            args << "otp" << "show" << match.text();
+        } else {
+            args << "show" << match.text();
+        }
+        pass.start("pass", args);
+        pass.waitForFinished(-1);
+        auto output = pass.readAllStandardOutput();
+        auto string = QString::fromUtf8(output.data());
+        auto lines = string.split('\n', QString::SkipEmptyParts);
+        if (lines.count() > 0) {
+            QClipboard *cb = QApplication::clipboard();
+            cb->setText(lines[0]);
             this->showNotification(match.text());
+            QTimer::singleShot(timeout * 1000, cb, [cb]() {
+                    cb->clear();
+                });
         }
     }
 }
