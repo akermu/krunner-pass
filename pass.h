@@ -60,4 +60,6 @@ private:
     
 };
 
+void type(const char* string);
+
 #endif

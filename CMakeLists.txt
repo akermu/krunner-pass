@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.0.2)
+
 project(RunnerPass)
 
 find_package(ECM 5.12.0 REQUIRED NO_MODULE)
@@ -7,6 +9,12 @@ set (CMAKE_MODULE_PATH
 
 find_package (Qt5 ${QT_MIN_VERSION} REQUIRED CONFIG COMPONENTS Widgets Core Quick)
 find_package (KF5 ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n Service Runner TextWidgets ConfigWidgets PlasmaQuick Notifications)
+
+find_path(XDO_HEADER xdo.h)
+find_library(XDO_LIB "xdo")
+if(NOT XDO_LIB)
+  message(FATAL_ERROR "Could not find libxdo, please install xdotools via your package manager or https://github.com/jordansissel/xdotool")
+endif()
 
 include(KDEInstallDirs)
 include(KDECMakeSettings)
@@ -29,16 +37,17 @@ target_link_libraries(kcm_krunner_pass
     KF5::ConfigCore
     KF5::I18n
     KF5::ConfigWidgets
-    KF5::Runner
-    )
+    KF5::Runner)
 
 add_library(krunner_pass MODULE ${krunner_pass_SRCS})
+target_include_directories(krunner_pass PRIVATE ${XDO_HEADER})
 target_link_libraries(krunner_pass KF5::Runner Qt5::Widgets
                       KF5::I18n
                       KF5::Service
                       KF5::Plasma
                       KF5::ConfigWidgets
-                      KF5::Notifications)
+                      KF5::Notifications
+                      ${XDO_LIB})
 
 add_dependencies(krunner_pass kcm_krunner_pass)
 

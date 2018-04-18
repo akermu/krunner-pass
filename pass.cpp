@@ -28,6 +28,14 @@
 #include <QClipboard>
 #include <QDebug>
 
+
+// extern "C" {
+// #include <xdo.h>
+// }
+// #include <X11/Xlib.h>
+// #include <X11/keysym.h>
+// #include <X11/extensions/XTest.h>
+
 #include <stdlib.h>
 
 #include "pass.h"
@@ -197,7 +205,6 @@ void Pass::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &m
 
     connect(pass, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
             [=](int exitCode, QProcess::ExitStatus exitStatus) {
-                Q_UNUSED(exitCode);
                 Q_UNUSED(exitStatus);
 
                 if (exitCode == 0) {
@@ -229,6 +236,7 @@ void Pass::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &m
                         auto lines = string.split('\n', QString::SkipEmptyParts);
                         if (lines.count() > 0) {
                             clip(lines[0]);
+                            type(lines[0].toStdString().c_str());
                             this->showNotification(match.text());
                         }
                     }
@@ -262,3 +270,15 @@ void Pass::showNotification(const QString &text, const QString &actionName /* = 
 K_EXPORT_PLASMA_RUNNER(pass, Pass)
 
 #include "pass.moc"
+
+
+// Down here because Qt and Xlib DEFINES clash
+extern "C" {
+#include <xdo.h>
+}
+
+void type(const char* string) {
+    xdo_t* xdo = xdo_new(NULL);
+    xdo_enter_text_window(xdo, CURRENTWINDOW, string, 12000);
+    xdo_free(xdo);
+}
