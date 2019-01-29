@@ -26,4 +26,18 @@ $ cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DCMAKE_INSTALL_PREFIX=`kf5-config 
 $ make
 ```
 
+For debian (>=9) you will need the following build dependencies:
+```
+apt-get install build-essential cmake extra-cmake-modules gettext \
+  qtdeclarative5-dev \
+  libkf5i18n-dev \
+  libkf5service-dev \
+  libkf5runner-dev \
+  libkf5textwidgets-dev \
+  libkf5notifications-dev
 
+mkdir -p build
+cd build
+cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DCMAKE_INSTALL_PREFIX=`kf5-config --prefix` -DKDE_INSTALL_QTPLUGINDIR=`kf5-config --qt-plugins`
+make
+```
