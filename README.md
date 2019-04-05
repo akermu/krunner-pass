@@ -41,3 +41,20 @@ cd build
 cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DCMAKE_INSTALL_PREFIX=`kf5-config --prefix` -DKDE_INSTALL_QTPLUGINDIR=`kf5-config --qt-plugins`
 make
 ```
+
+For Fedora (>=23) you will need the following build dependencies:
+```
+dnf install @development-tools cmake extra-cmake-modules gettext \
+   qt5-qtdeclarative-devel \
+   kf5-ki18n-devel \
+   kf5-kservice-devel \
+   kf5-krunner-devel \
+   kf5-ktextwidgets-devel \
+   kf5-knotifications-devel \
+   kf5-kconfigwidgets-devel \
+
+mkdir -p build
+cd build
+cmake .. -DCMAKE_EXPORT_COMPILE_COMMANDS=1 -DCMAKE_INSTALL_PREFIX=`kf5-config --prefix` -DKDE_INSTALL_QTPLUGINDIR=`kf5-config --qt-plugins`
+make
+```
