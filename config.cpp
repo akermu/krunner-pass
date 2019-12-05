@@ -20,6 +20,7 @@
 #include <KPluginFactory>
 #include <krunner/abstractrunner.h>
 #include <QToolButton>
+#include <QtCore/QDir>
 
 #include "config.h"
 
@@ -46,24 +47,27 @@ PassConfigForm::PassConfigForm(QWidget *parent) : QWidget(parent)
     connect(this->buttonAddAction, &QPushButton::clicked, [this]() {
         this->addPassAction(this->lineName->text(), this->lineIcon->text(), this->lineRegEx->text());
     });
+
+    // Disable add button if the necessary field are not filled out
+    connect(this->lineIcon, SIGNAL(textChanged(QString)), this, SLOT(validateAddButton()));
+    connect(this->lineName, SIGNAL(textChanged(QString)), this, SLOT(validateAddButton()));
+    connect(this->lineRegEx, SIGNAL(textChanged(QString)), this, SLOT(validateAddButton()));
+    validateAddButton();
 }
 
 void PassConfigForm::addPassAction(const QString &name, const QString &icon, const QString &regex, bool isNew /* = true */)
 {
     // Checks
-    for (auto act: this->passActions())
+    for (const auto& act: this->passActions())
         if (act.name == name)
             return;
-
-    if (name.isEmpty() || icon.isEmpty() || regex.isEmpty())
-        return;
 
     // Widgets
     auto *listWidget = new QWidget(this);
     auto *layoutAction = new QHBoxLayout(listWidget);
     auto *buttonRemoveAction = new QToolButton(listWidget);
 
-    buttonRemoveAction->setIcon(QIcon::fromTheme("remove"));
+    buttonRemoveAction->setIcon(QIcon::fromTheme("delete"));
     layoutAction->setMargin(0);
     layoutAction->addStretch();
     layoutAction->addWidget(buttonRemoveAction);
@@ -91,7 +95,8 @@ void PassConfigForm::addPassAction(const QString &name, const QString &icon, con
 QVector<PassAction> PassConfigForm::passActions()
 {
     QVector<PassAction> passActions;
-    for(int i = 0; i < this->listSavedActions->count(); ++i) {
+    const int listSavedActionsCount = this->listSavedActions->count();
+    for(int i = 0; i < listSavedActionsCount; ++i) {
         QListWidgetItem* item = this->listSavedActions->item(i);
         passActions << item->data(Qt::UserRole).value<PassAction>();
     }
@@ -100,7 +105,8 @@ QVector<PassAction> PassConfigForm::passActions()
 
 void PassConfigForm::clearPassActions()
 {
-    for(int i = 0; i < this->listSavedActions->count(); ++i) {
+    const int listSavedActionsCount = this->listSavedActions->count();
+    for(int i = 0; i < listSavedActionsCount; ++i) {
         QListWidgetItem* item = this->listSavedActions->item(i);
         delete this->listSavedActions->itemWidget(item);
     }
@@ -115,6 +121,12 @@ void PassConfigForm::clearInputs()
     this->lineRegEx->clear();
 }
 
+void PassConfigForm::validateAddButton() {
+    this->buttonAddAction->setDisabled(this->lineIcon->text().isEmpty() ||
+    this->lineName->text().isEmpty() ||
+    this->lineRegEx->text().isEmpty());
+}
+
 
 PassConfig::PassConfig(QWidget *parent, const QVariantList &args) :
         KCModule(parent, args)
@@ -122,8 +134,6 @@ PassConfig::PassConfig(QWidget *parent, const QVariantList &args) :
     this->ui = new PassConfigForm(this);
     QGridLayout* layout = new QGridLayout(this);
     layout->addWidget(ui, 0, 0);
-
-    load();
 
     connect(this->ui,SIGNAL(passActionAdded()),this,SLOT(changed()));
     connect(this->ui,SIGNAL(passActionRemoved()),this,SLOT(changed()));
@@ -150,9 +160,8 @@ void PassConfig::load()
     // Load saved actions
     this->ui->clearPassActions();
 
-    auto actionGroup = passCfg.group(Config::Group::Actions);
-    auto groups = actionGroup.groupList();
-    Q_FOREACH (auto name, groups) {
+    const auto actionGroup = passCfg.group(Config::Group::Actions);
+    for (const auto& name: actionGroup.groupList()) {
         auto group = actionGroup.group(name);
         auto passAction = PassAction::fromConfig(group);
 
@@ -177,12 +186,11 @@ void PassConfig::save()
     passCfg.writeEntry(Config::showActions, showActions);
     passCfg.writeEntry(Config::showFileContentAction, showFileContentAction);
 
-
     passCfg.deleteGroup(Config::Group::Actions);
 
     if (showActions) {
         int i = 0;
-        for (PassAction act: this->ui->passActions()) {
+        for (PassAction& act: this->ui->passActions()) {
             auto group = passCfg.group(Config::Group::Actions).group(QString::number(i++));
             act.writeToConfig(group);
         }

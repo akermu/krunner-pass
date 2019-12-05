@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 2.8.12)
+
 project(RunnerPass)
 
 find_package(ECM 5.12.0 REQUIRED NO_MODULE)

@@ -30,7 +30,7 @@ class Pass : public Plasma::AbstractRunner
 
 public:
     Pass(QObject *parent, const QVariantList &args);
-    ~Pass();
+    ~Pass() override;
 
     void clip(const QString &msg);
     void match(Plasma::RunnerContext &) override;

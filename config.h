@@ -76,6 +76,9 @@ public:
 signals:
     void passActionRemoved();
     void passActionAdded();
+
+private slots:
+    void validateAddButton();
 };
 
 
@@ -84,12 +87,12 @@ class PassConfig : public KCModule
     Q_OBJECT
 
 public:
-    explicit PassConfig(QWidget* parent = 0, const QVariantList& args = QVariantList());
+    explicit PassConfig(QWidget* parent = nullptr, const QVariantList& args = QVariantList());
 
 public Q_SLOTS:
-    void save();
-    void load();
-    void defaults();
+    void save() override;
+    void load() override;
+    void defaults() override;
 
 private:
     PassConfigForm *ui;
