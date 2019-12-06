@@ -152,9 +152,8 @@ void Pass::match(Plasma::RunnerContext &context)
     QList<Plasma::QueryMatch> matches;
 
     lock.lockForRead();
-    QRegularExpression re(".*" + input + ".*", QRegularExpression::CaseInsensitiveOption);
     for (const auto& password: passwords) {
-        if (re.match(password).hasMatch()) {
+        if (password.contains(input,Qt::CaseInsensitive)) {
             Plasma::QueryMatch match(this);
             match.setType(input.length() == password.length() ?
                 Plasma::QueryMatch::ExactMatch : Plasma::QueryMatch::CompletionMatch);
