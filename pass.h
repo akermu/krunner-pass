@@ -45,7 +45,7 @@ public slots:
 protected:
     void init() override;
     void initPasswords();
-    void showNotification(const QString &, const QString & = "");
+    void showNotification(const QString &, const QString & = QString());
 
 private:
     QDir baseDir;
@@ -57,7 +57,9 @@ private:
     
     bool showActions;
     QList<QAction *> orderedActions;
-    
+
+    bool showOnlyPrefixed;
+    QLatin1String queryPrefix = QLatin1String("pass");
 };
 
 #endif

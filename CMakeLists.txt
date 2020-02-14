@@ -44,6 +44,6 @@ target_link_libraries(krunner_pass KF5::Runner Qt5::Widgets
 
 add_dependencies(krunner_pass kcm_krunner_pass)
 
-install(TARGETS krunner_pass kcm_krunner_pass DESTINATION ${PLUGIN_INSTALL_DIR})
+install(TARGETS krunner_pass kcm_krunner_pass DESTINATION ${KDE_INSTALL_QTPLUGINDIR})
 install(FILES plasma-runner-pass.desktop plasma-runner-pass_config.desktop DESTINATION ${SERVICES_INSTALL_DIR})
 install(FILES krunner_pass.notifyrc DESTINATION ${KNOTIFYRC_INSTALL_DIR})

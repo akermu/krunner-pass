@@ -6,32 +6,37 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>314</width>
-    <height>420</height>
+    <width>356</width>
+    <height>421</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Pass Config</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
-   <item row="0" column="0">
+   <item row="4" column="0">
+    <widget class="QGroupBox" name="boxSavedActions">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="title">
+      <string>Saved Actions</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <item row="0" column="0">
+       <widget class="QListWidget" name="listSavedActions"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="1" column="0">
     <widget class="QCheckBox" name="checkAdditionalActions">
      <property name="text">
       <string>Show additional actions</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QCheckBox" name="checkShowFileContentAction">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="text">
-      <string>Show an action for displaying full file content</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
+   <item row="3" column="0">
     <widget class="QGroupBox" name="boxNewAction">
      <property name="enabled">
       <bool>false</bool>
@@ -93,19 +98,21 @@
      </layout>
     </widget>
    </item>
-   <item row="3" column="0">
-    <widget class="QGroupBox" name="boxSavedActions">
+   <item row="2" column="0">
+    <widget class="QCheckBox" name="checkShowFileContentAction">
      <property name="enabled">
       <bool>false</bool>
      </property>
-     <property name="title">
-      <string>Saved Actions</string>
+     <property name="text">
+      <string>Show an action for displaying full file content</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_3">
-      <item row="0" column="0">
-       <widget class="QListWidget" name="listSavedActions"/>
-      </item>
-     </layout>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QCheckBox" name="checkShowOnlyPrefixed">
+     <property name="text">
+      <string>Show only options when query starts with &quot;pass&quot;</string>
+     </property>
     </widget>
    </item>
   </layout>

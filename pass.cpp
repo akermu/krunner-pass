@@ -17,7 +17,7 @@
  *****************************************************************************/
 #include <KSharedConfig>
 #include <KLocalizedString>
-#include <knotification.h>
+#include <KNotification>
 
 #include <QAction>
 #include <QDirIterator>
@@ -60,20 +60,24 @@ void Pass::reloadConfiguration()
     KConfigGroup cfg = config();
     this->showActions = cfg.readEntry(Config::showActions, false);
 
+    this->showOnlyPrefixed = cfg.readEntry(Config::showOnlyPrefixed, false);
+
     if (showActions) {
         const auto configActions = cfg.group(Config::Group::Actions);
 
         // Create actions for every additional field
-         for (const auto& name: configActions.groupList() ) {
+        for (const auto &name: configActions.groupList()) {
             auto group = configActions.group(name);
             auto passAction = PassAction::fromConfig(group);
 
             auto icon = QIcon::fromTheme(passAction.icon, QIcon::fromTheme("object-unlocked"));
-            QAction *act = addAction(passAction.name, icon , passAction.name);
+            QAction *act = addAction(passAction.name, icon, passAction.name);
             act->setData(passAction.regex);
             this->orderedActions << act;
         }
 
+    } else {
+        this->orderedActions.clear();
     }
 
     if (cfg.readEntry(Config::showFileContentAction, false)) {
@@ -113,10 +117,11 @@ void Pass::init()
 
     initPasswords();
 
-    connect(&watcher, SIGNAL(directoryChanged(QString)), this, SLOT(reinitPasswords(QString)));
+    connect(&watcher, &QFileSystemWatcher::directoryChanged, this, &Pass::reinitPasswords);
 }
 
-void Pass::initPasswords() {
+void Pass::initPasswords()
+{
     passwords.clear();
 
     watcher.addPath(this->baseDir.absolutePath());
@@ -124,7 +129,7 @@ void Pass::initPasswords() {
     while (it.hasNext()) {
         it.next();
         const auto fileInfo = it.fileInfo();
-        if (fileInfo.isFile() && fileInfo.suffix() == "gpg") {
+        if (fileInfo.isFile() && fileInfo.suffix() == QLatin1String("gpg")) {
             QString password = this->baseDir.relativeFilePath(fileInfo.absoluteFilePath());
             // Remove suffix ".gpg"
             password.chop(4);
@@ -135,7 +140,8 @@ void Pass::initPasswords() {
     }
 }
 
-void Pass::reinitPasswords(const QString &path) {
+void Pass::reinitPasswords(const QString &path)
+{
     Q_UNUSED(path);
 
     lock.lockForWrite();
@@ -145,18 +151,27 @@ void Pass::reinitPasswords(const QString &path) {
 
 void Pass::match(Plasma::RunnerContext &context)
 {
-    if (!context.isValid()) return;
+    if (!context.isValid()) {
+        return;
+    }
 
-    const auto input = context.query();
+    auto input = context.query();
+    if (showOnlyPrefixed) {
+        if (input.startsWith(queryPrefix)) {
+            input = input.remove(queryPrefix).simplified();
+        } else {
+            return;
+        }
+    }
 
     QList<Plasma::QueryMatch> matches;
 
     lock.lockForRead();
-    for (const auto& password: passwords) {
-        if (password.contains(input,Qt::CaseInsensitive)) {
+    for (const auto &password: qAsConst(passwords)) {
+        if (password.contains(input, Qt::CaseInsensitive)) {
             Plasma::QueryMatch match(this);
             match.setType(input.length() == password.length() ?
-                Plasma::QueryMatch::ExactMatch : Plasma::QueryMatch::CompletionMatch);
+                          Plasma::QueryMatch::ExactMatch : Plasma::QueryMatch::CompletionMatch);
             match.setIcon(QIcon::fromTheme("object-locked"));
             match.setText(password);
             matches.append(match);
@@ -172,8 +187,8 @@ void Pass::clip(const QString &msg)
     QClipboard *cb = QApplication::clipboard();
     cb->setText(msg);
     QTimer::singleShot(timeout * 1000, cb, [cb]() {
-            cb->clear();
-        });
+        cb->setText(QString());
+    });
 }
 
 void Pass::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &match)
@@ -185,10 +200,9 @@ void Pass::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &m
     auto *pass = new QProcess();
     QStringList args;
     if (isOtp) {
-        args << "otp" << "show" << match.text();
-    } else {
-        args << "show" << match.text();
+        args << "otp";
     }
+    args << "show" << match.text();
     pass->start("pass", args);
 
     connect(pass, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
@@ -239,19 +253,16 @@ QList<QAction *> Pass::actionsForMatch(const Plasma::QueryMatch &match)
 {
     Q_UNUSED(match)
 
-        if (showActions)
-            return this->orderedActions;
-
-    return QList<QAction *>();
+    return this->orderedActions;
 }
 
-void Pass::showNotification(const QString &text, const QString &actionName /* = "" */)
+void Pass::showNotification(const QString &text, const QString &actionName)
 {
-    const QString msgPrefix = actionName.isEmpty() ? "":actionName + i18n(" of ");
+    const QString msgPrefix = actionName.isEmpty() ? "" : actionName + i18n(" of ");
     const QString msg = i18n("Password %1 copied to clipboard for %2 seconds", text, timeout);
     KNotification::event("password-unlocked", "Pass", msgPrefix + msg,
-                                             "object-unlocked", nullptr, KNotification::CloseOnTimeout,
-                                             "krunner_pass");
+                         "object-unlocked", nullptr, KNotification::CloseOnTimeout,
+                         "krunner_pass");
 }
 
 K_EXPORT_PLASMA_RUNNER(pass, Pass)
