@@ -40,33 +40,29 @@ using namespace std;
 Pass::Pass(QObject *parent, const QVariantList &args)
     : Plasma::AbstractRunner(parent, args)
 {
-    Q_UNUSED(args);
-
     // General runner configuration
-    setObjectName(QString("Pass"));
+    setObjectName(QStringLiteral("Pass"));
     setSpeed(AbstractRunner::NormalSpeed);
     setPriority(HighestPriority);
-    auto comment = i18n("Looks for a password matching :q:. Pressing ENTER copies the password to the clipboard.");
-    setDefaultSyntax(Plasma::RunnerSyntax(QString(":q:"), comment));
 }
 
 Pass::~Pass() = default;
 
 void Pass::reloadConfiguration()
 {
-    actions().clear();
+    clearActions();
     orderedActions.clear();
 
     KConfigGroup cfg = config();
+    cfg.config()->reparseConfiguration(); // Just to be sure
     this->showActions = cfg.readEntry(Config::showActions, false);
-
-    this->showOnlyPrefixed = cfg.readEntry(Config::showOnlyPrefixed, false);
 
     if (showActions) {
         const auto configActions = cfg.group(Config::Group::Actions);
 
         // Create actions for every additional field
-        for (const auto &name: configActions.groupList()) {
+        const auto configActionsList = configActions.groupList();
+        for (const auto &name: configActionsList) {
             auto group = configActions.group(name);
             auto passAction = PassAction::fromConfig(group);
 
@@ -86,6 +82,12 @@ void Pass::reloadConfiguration()
         act->setData(Config::showFileContentAction);
         this->orderedActions << act;
     }
+
+    setDefaultSyntax(Plasma::RunnerSyntax(QString(":q:"),
+                                          i18n("Looks for a password matching :q:. Pressing ENTER copies the password to the clipboard.")));
+
+    addSyntax(Plasma::RunnerSyntax(QString("pass :q:"),
+                                          i18n("Looks for a password matching :q:. This way you avoid results from other runners")));
 }
 
 void Pass::init()
@@ -142,7 +144,7 @@ void Pass::initPasswords()
 
 void Pass::reinitPasswords(const QString &path)
 {
-    Q_UNUSED(path);
+    Q_UNUSED(path)
 
     lock.lockForWrite();
     initPasswords();
@@ -156,12 +158,11 @@ void Pass::match(Plasma::RunnerContext &context)
     }
 
     auto input = context.query();
-    if (showOnlyPrefixed) {
-        if (input.startsWith(queryPrefix)) {
-            input = input.remove(queryPrefix).simplified();
-        } else {
-            return;
-        }
+    // If we use the prefix we want to remove it
+    if (input.startsWith(queryPrefix)) {
+        input = input.remove(queryPrefix).simplified();
+    } else if (input.count() < 3 && !context.singleRunnerQueryMode()) {
+        return;
     }
 
     QList<Plasma::QueryMatch> matches;
@@ -207,16 +208,12 @@ void Pass::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &m
 
     connect(pass, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
             [=](int exitCode, QProcess::ExitStatus exitStatus) {
-                Q_UNUSED(exitCode);
-                Q_UNUSED(exitStatus);
+                Q_UNUSED(exitStatus)
 
                 if (exitCode == 0) {
-
                     const auto output = pass->readAllStandardOutput();
-
                     if (match.selectedAction() != nullptr) {
                         const auto data = match.selectedAction()->data().toString();
-
                         if (data == Config::showFileContentAction) {
                             QMessageBox::information(nullptr, match.text(), output);
                         } else {

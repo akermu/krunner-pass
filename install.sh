@@ -11,5 +11,5 @@ sudo make install
 
 set +e
 
-kquitapp5 krunner 2> /dev/null
-kstart5 --windowclass krunner krunner > /dev/null 2>&1 &
+kquitapp5 krunner
+kstart5 --windowclass krunner krunner

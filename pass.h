@@ -39,7 +39,7 @@ public:
     void reloadConfiguration() override;
     
     
-public slots:
+public Q_SLOTS:
     void reinitPasswords(const QString &path);
 
 protected:
@@ -58,8 +58,7 @@ private:
     bool showActions;
     QList<QAction *> orderedActions;
 
-    bool showOnlyPrefixed;
-    QLatin1String queryPrefix = QLatin1String("pass");
+    const QLatin1String queryPrefix = QLatin1String("pass");
 };
 
 #endif

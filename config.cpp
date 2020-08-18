@@ -141,7 +141,6 @@ PassConfig::PassConfig(QWidget *parent, const QVariantList &args)
 #endif
     connect(this->ui, &PassConfigForm::passActionAdded, this, changedSlotPointer);
     connect(this->ui, &PassConfigForm::passActionRemoved, this, changedSlotPointer);
-    connect(this->ui->checkShowOnlyPrefixed, &QCheckBox::stateChanged, this, changedSlotPointer);
     connect(this->ui->checkAdditionalActions, &QCheckBox::stateChanged, this, changedSlotPointer);
     connect(this->ui->checkShowFileContentAction, &QCheckBox::stateChanged, this, changedSlotPointer);
     connect(this->ui->listSavedActions, &QListWidget::itemSelectionChanged, this, changedSlotPointer);
@@ -154,11 +153,9 @@ void PassConfig::load()
     KSharedConfig::Ptr cfg = KSharedConfig::openConfig(QStringLiteral("krunnerrc"));
     KConfigGroup passCfg = cfg->group("Runners").group("Pass");
 
-    bool showOnlyPrefixed = passCfg.readEntry(Config::showOnlyPrefixed, false);
     bool showActions = passCfg.readEntry(Config::showActions, false);
     bool showFileContentAction = passCfg.readEntry(Config::showFileContentAction, false);
 
-    this->ui->checkShowOnlyPrefixed->setChecked(showOnlyPrefixed);
     this->ui->checkAdditionalActions->setChecked(showActions);
     this->ui->checkShowFileContentAction->setChecked(showFileContentAction);
 
@@ -180,11 +177,9 @@ void PassConfig::save()
     KSharedConfig::Ptr cfg = KSharedConfig::openConfig(QStringLiteral("krunnerrc"));
     KConfigGroup passCfg = cfg->group("Runners").group("Pass");
 
-    auto showOnlyPrefixed = this->ui->checkShowOnlyPrefixed->isChecked();
     auto showActions = this->ui->checkAdditionalActions->isChecked();
     auto showFileContentAction = this->ui->checkShowFileContentAction->isChecked();
 
-    passCfg.writeEntry(Config::showOnlyPrefixed, showOnlyPrefixed);
     passCfg.writeEntry(Config::showActions, showActions);
     passCfg.writeEntry(Config::showFileContentAction, showFileContentAction);
 
@@ -203,14 +198,13 @@ void PassConfig::defaults()
 {
     KCModule::defaults();
 
-    ui->checkShowOnlyPrefixed->setChecked(false);
     ui->checkAdditionalActions->setChecked(false);
     ui->checkShowFileContentAction->setChecked(false);
     ui->clearPassActions();
     ui->clearInputs();
 
 #if KCMUTILS_VERSION >= QT_VERSION_CHECK(5, 64, 0)
-    emit markAsChanged();
+    markAsChanged();
 #else
     emit changed(true);
 #endif

@@ -25,7 +25,6 @@
 
 
 struct Config {
-    constexpr static const char *showOnlyPrefixed = "showOnlyPrefixed";
     constexpr static const char *showActions = "showAdditionalActions";
     constexpr static const char *showFileContentAction = "showFullFileContentAction";
     struct Group {
