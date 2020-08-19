@@ -23,6 +23,7 @@
 #include <QDir>
 #include <QReadWriteLock>
 #include <QFileSystemWatcher>
+#include <QRegularExpression>
 
 class Pass : public Plasma::AbstractRunner
 {
@@ -58,7 +59,7 @@ private:
     bool showActions;
     QList<QAction *> orderedActions;
 
-    const QLatin1String queryPrefix = QLatin1String("pass");
+    const QRegularExpression queryPrefix = QRegularExpression("^pass( .+)?$");
 };
 
 #endif

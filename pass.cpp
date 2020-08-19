@@ -159,8 +159,8 @@ void Pass::match(Plasma::RunnerContext &context)
 
     auto input = context.query();
     // If we use the prefix we want to remove it
-    if (input.startsWith(queryPrefix)) {
-        input = input.remove(queryPrefix).simplified();
+    if (input.contains(queryPrefix)) {
+        input = input.remove(QLatin1String("pass")).simplified();
     } else if (input.count() < 3 && !context.singleRunnerQueryMode()) {
         return;
     }
