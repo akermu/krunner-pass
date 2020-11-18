@@ -23,6 +23,7 @@
 #include <QDir>
 #include <QReadWriteLock>
 #include <QFileSystemWatcher>
+#include <QRegularExpression>
 
 class Pass : public Plasma::AbstractRunner
 {
@@ -30,7 +31,7 @@ class Pass : public Plasma::AbstractRunner
 
 public:
     Pass(QObject *parent, const QVariantList &args);
-    ~Pass();
+    ~Pass() override;
 
     void clip(const QString &msg);
     void match(Plasma::RunnerContext &) override;
@@ -39,13 +40,13 @@ public:
     void reloadConfiguration() override;
     
     
-public slots:
+public Q_SLOTS:
     void reinitPasswords(const QString &path);
 
 protected:
     void init() override;
     void initPasswords();
-    void showNotification(const QString &, const QString & = "");
+    void showNotification(const QString &, const QString & = QString());
 
 private:
     QDir baseDir;
@@ -57,7 +58,8 @@ private:
     
     bool showActions;
     QList<QAction *> orderedActions;
-    
+
+    const QRegularExpression queryPrefix = QRegularExpression("^pass( .+)?$");
 };
 
 #endif

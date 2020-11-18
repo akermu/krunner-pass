@@ -34,7 +34,8 @@ apt-get install build-essential cmake extra-cmake-modules gettext \
   libkf5service-dev \
   libkf5runner-dev \
   libkf5textwidgets-dev \
-  libkf5notifications-dev
+  libkf5notifications-dev \
+  libkf5kcmutils-dev
 
 mkdir -p build
 cd build

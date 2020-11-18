@@ -20,14 +20,15 @@
 #include <KPluginFactory>
 #include <krunner/abstractrunner.h>
 #include <QToolButton>
+#include <QtCore/QDir>
 
+#include "kcmutils_version.h"
 #include "config.h"
 
 K_PLUGIN_FACTORY(PassConfigFactory, registerPlugin<PassConfig>("kcm_krunner_pass");)
 
-
-
-PassConfigForm::PassConfigForm(QWidget *parent) : QWidget(parent)
+PassConfigForm::PassConfigForm(QWidget *parent)
+        : QWidget(parent)
 {
     setupUi(this);
     this->listSavedActions->setDragEnabled(true);
@@ -46,32 +47,36 @@ PassConfigForm::PassConfigForm(QWidget *parent) : QWidget(parent)
     connect(this->buttonAddAction, &QPushButton::clicked, [this]() {
         this->addPassAction(this->lineName->text(), this->lineIcon->text(), this->lineRegEx->text());
     });
+
+    // Disable add button if the necessary field are not filled out
+    connect(this->lineIcon, &QLineEdit::textChanged, this, &PassConfigForm::validateAddButton);
+    connect(this->lineName, &QLineEdit::textChanged, this, &PassConfigForm::validateAddButton);
+    connect(this->lineRegEx, &QLineEdit::textChanged, this, &PassConfigForm::validateAddButton);
+    validateAddButton();
 }
 
-void PassConfigForm::addPassAction(const QString &name, const QString &icon, const QString &regex, bool isNew /* = true */)
+void
+PassConfigForm::addPassAction(const QString &name, const QString &icon, const QString &regex, bool isNew /* = true */)
 {
     // Checks
-    for (auto act: this->passActions())
+    for (const auto &act: this->passActions())
         if (act.name == name)
             return;
-
-    if (name.isEmpty() || icon.isEmpty() || regex.isEmpty())
-        return;
 
     // Widgets
     auto *listWidget = new QWidget(this);
     auto *layoutAction = new QHBoxLayout(listWidget);
     auto *buttonRemoveAction = new QToolButton(listWidget);
 
-    buttonRemoveAction->setIcon(QIcon::fromTheme("remove"));
+    buttonRemoveAction->setIcon(QIcon::fromTheme("delete"));
     layoutAction->setMargin(0);
     layoutAction->addStretch();
     layoutAction->addWidget(buttonRemoveAction);
     listWidget->setLayout(layoutAction);
 
     // Item
-    auto *item = new QListWidgetItem(name + (isNew ? "*":""), this->listSavedActions);
-    item->setData(Qt::UserRole, QVariant::fromValue(PassAction {name, icon, regex}));
+    auto *item = new QListWidgetItem(name + (isNew ? "*" : ""), this->listSavedActions);
+    item->setData(Qt::UserRole, QVariant::fromValue(PassAction{name, icon, regex}));
     this->listSavedActions->setItemWidget(item, listWidget);
 
     this->clearInputs();
@@ -91,8 +96,8 @@ void PassConfigForm::addPassAction(const QString &name, const QString &icon, con
 QVector<PassAction> PassConfigForm::passActions()
 {
     QVector<PassAction> passActions;
-    for(int i = 0; i < this->listSavedActions->count(); ++i) {
-        QListWidgetItem* item = this->listSavedActions->item(i);
+    for (int i = 0; i < listSavedActions->count(); ++i) {
+        QListWidgetItem *item = this->listSavedActions->item(i);
         passActions << item->data(Qt::UserRole).value<PassAction>();
     }
     return passActions;
@@ -100,8 +105,8 @@ QVector<PassAction> PassConfigForm::passActions()
 
 void PassConfigForm::clearPassActions()
 {
-    for(int i = 0; i < this->listSavedActions->count(); ++i) {
-        QListWidgetItem* item = this->listSavedActions->item(i);
+    for (int i = 0; i < listSavedActions->count(); ++i) {
+        QListWidgetItem *item = this->listSavedActions->item(i);
         delete this->listSavedActions->itemWidget(item);
     }
 
@@ -115,21 +120,30 @@ void PassConfigForm::clearInputs()
     this->lineRegEx->clear();
 }
 
+void PassConfigForm::validateAddButton()
+{
+    this->buttonAddAction->setDisabled(this->lineIcon->text().isEmpty() ||
+            this->lineName->text().isEmpty() ||
+            this->lineRegEx->text().isEmpty());
+}
 
-PassConfig::PassConfig(QWidget *parent, const QVariantList &args) :
+PassConfig::PassConfig(QWidget *parent, const QVariantList &args)
+        :
         KCModule(parent, args)
 {
     this->ui = new PassConfigForm(this);
-    QGridLayout* layout = new QGridLayout(this);
+    QGridLayout *layout = new QGridLayout(this);
     layout->addWidget(ui, 0, 0);
-
-    load();
-
-    connect(this->ui,SIGNAL(passActionAdded()),this,SLOT(changed()));
-    connect(this->ui,SIGNAL(passActionRemoved()),this,SLOT(changed()));
-    connect(this->ui->checkAdditionalActions,SIGNAL(stateChanged(int)),this,SLOT(changed()));
-    connect(this->ui->checkShowFileContentAction,SIGNAL(stateChanged(int)),this,SLOT(changed()));
-    connect(this->ui->listSavedActions,SIGNAL(itemSelectionChanged()), this, SLOT(changed()));
+#if KCMUTILS_VERSION >= QT_VERSION_CHECK(5, 64, 0)
+    const auto changedSlotPointer = &PassConfig::markAsChanged;
+#else
+    const auto changedSlotPointer = static_cast<void (PassConfig::*)()>(&PassConfig::changed);
+#endif
+    connect(this->ui, &PassConfigForm::passActionAdded, this, changedSlotPointer);
+    connect(this->ui, &PassConfigForm::passActionRemoved, this, changedSlotPointer);
+    connect(this->ui->checkAdditionalActions, &QCheckBox::stateChanged, this, changedSlotPointer);
+    connect(this->ui->checkShowFileContentAction, &QCheckBox::stateChanged, this, changedSlotPointer);
+    connect(this->ui->listSavedActions, &QListWidget::itemSelectionChanged, this, changedSlotPointer);
 }
 
 void PassConfig::load()
@@ -137,9 +151,7 @@ void PassConfig::load()
     KCModule::load();
 
     KSharedConfig::Ptr cfg = KSharedConfig::openConfig(QStringLiteral("krunnerrc"));
-    KConfigGroup passCfg = cfg->group("Runners");
-    passCfg = KConfigGroup(&passCfg, "Pass");
-
+    KConfigGroup passCfg = cfg->group("Runners").group("Pass");
 
     bool showActions = passCfg.readEntry(Config::showActions, false);
     bool showFileContentAction = passCfg.readEntry(Config::showFileContentAction, false);
@@ -150,16 +162,12 @@ void PassConfig::load()
     // Load saved actions
     this->ui->clearPassActions();
 
-    auto actionGroup = passCfg.group(Config::Group::Actions);
-    auto groups = actionGroup.groupList();
-    Q_FOREACH (auto name, groups) {
+    const auto actionGroup = passCfg.group(Config::Group::Actions);
+    for (const auto &name: actionGroup.groupList()) {
         auto group = actionGroup.group(name);
         auto passAction = PassAction::fromConfig(group);
-
         this->ui->addPassAction(passAction.name, passAction.icon, passAction.regex, false);
     }
-
-    emit changed(false);
 }
 
 void PassConfig::save()
@@ -167,28 +175,23 @@ void PassConfig::save()
     KCModule::save();
 
     KSharedConfig::Ptr cfg = KSharedConfig::openConfig(QStringLiteral("krunnerrc"));
-    KConfigGroup passCfg = cfg->group("Runners");
-    passCfg = KConfigGroup(&passCfg, "Pass");
-
+    KConfigGroup passCfg = cfg->group("Runners").group("Pass");
 
     auto showActions = this->ui->checkAdditionalActions->isChecked();
-    auto showFileContentAction =  this->ui->checkShowFileContentAction->isChecked();
+    auto showFileContentAction = this->ui->checkShowFileContentAction->isChecked();
 
     passCfg.writeEntry(Config::showActions, showActions);
     passCfg.writeEntry(Config::showFileContentAction, showFileContentAction);
-
 
     passCfg.deleteGroup(Config::Group::Actions);
 
     if (showActions) {
         int i = 0;
-        for (PassAction act: this->ui->passActions()) {
+        for (PassAction &act: this->ui->passActions()) {
             auto group = passCfg.group(Config::Group::Actions).group(QString::number(i++));
             act.writeToConfig(group);
         }
     }
-
-    emit changed(false);
 }
 
 void PassConfig::defaults()
@@ -200,7 +203,11 @@ void PassConfig::defaults()
     ui->clearPassActions();
     ui->clearInputs();
 
+#if KCMUTILS_VERSION >= QT_VERSION_CHECK(5, 64, 0)
+    markAsChanged();
+#else
     emit changed(true);
+#endif
 }
 
 
