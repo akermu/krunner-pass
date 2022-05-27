@@ -24,6 +24,7 @@ find_package (KF5 ${KF5_MIN_VERSION}
   PlasmaQuick
   Notifications
   Auth
+  KCMUtils
 )
 
 include(KDEInstallDirs)
@@ -63,6 +64,7 @@ target_link_libraries(kcm_krunner_pass
     KF5::I18n
     KF5::ConfigWidgets
     KF5::Runner
+    KF5::KCMUtils
     )
 
 add_library(krunner_pass MODULE ${krunner_pass_SRCS})
