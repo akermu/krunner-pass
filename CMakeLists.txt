@@ -25,8 +25,8 @@ find_package (KF5 ${KF5_MIN_VERSION}
   Notifications
   Auth
   KCMUtils
+  GuiAddons
 )
-
 include(KDEInstallDirs)
 include(KDECMakeSettings)
 include(KDECompilerSettings NO_POLICY_SCOPE)
@@ -73,7 +73,8 @@ target_link_libraries(krunner_pass KF5::Runner Qt5::Widgets
                       KF5::Service
                       KF5::Plasma
                       KF5::ConfigWidgets
-                      KF5::Notifications)
+                      KF5::Notifications
+                      KF5::GuiAddons)
 
 add_dependencies(krunner_pass kcm_krunner_pass)
 
