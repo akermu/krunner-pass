@@ -7,9 +7,26 @@ set (CMAKE_MODULE_PATH
      ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR} ${CMAKE_MODULE_PATH}
 )
 
-find_package (Qt5 ${QT_MIN_VERSION} REQUIRED CONFIG COMPONENTS Widgets Core Quick DBus)
-find_package (KF5 ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n Service Runner TextWidgets ConfigWidgets PlasmaQuick Notifications Auth)
-
+find_package (Qt5 ${QT_MIN_VERSION}
+  REQUIRED CONFIG COMPONENTS
+  Widgets
+  Core
+  Quick
+  DBus
+)
+find_package (KF5 ${KF5_MIN_VERSION}
+  REQUIRED COMPONENTS
+  I18n
+  Service
+  Runner
+  TextWidgets
+  ConfigWidgets
+  PlasmaQuick
+  Notifications
+  Auth
+  KCMUtils
+  GuiAddons
+)
 include(KDEInstallDirs)
 include(KDECMakeSettings)
 include(KDECompilerSettings NO_POLICY_SCOPE)
@@ -47,6 +64,7 @@ target_link_libraries(kcm_krunner_pass
     KF5::I18n
     KF5::ConfigWidgets
     KF5::Runner
+    KF5::KCMUtils
     )
 
 add_library(krunner_pass MODULE ${krunner_pass_SRCS})
@@ -55,7 +73,8 @@ target_link_libraries(krunner_pass KF5::Runner Qt5::Widgets
                       KF5::Service
                       KF5::Plasma
                       KF5::ConfigWidgets
-                      KF5::Notifications)
+                      KF5::Notifications
+                      KF5::GuiAddons)
 
 add_dependencies(krunner_pass kcm_krunner_pass)
 

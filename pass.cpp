@@ -26,6 +26,8 @@
 #include <QTimer>
 #include <QMessageBox>
 #include <QClipboard>
+#include <KSystemClipboard>
+#include <QMimeData>
 #include <QDebug>
 #include <QApplication>
 
@@ -185,10 +187,14 @@ void Pass::match(Plasma::RunnerContext &context)
 
 void Pass::clip(const QString &msg)
 {
-    QClipboard *cb = QApplication::clipboard();
-    cb->setText(msg);
-    QTimer::singleShot(timeout * 1000, cb, [cb]() {
-        cb->setText(QString());
+    auto md = new QMimeData;
+    auto kc = KSystemClipboard::instance();
+    // https://phabricator.kde.org/D12539
+    md->setText(msg);
+    md->setData(QStringLiteral("x-kde-passwordManagerHint"), "secret");
+    kc->setMimeData(md,QClipboard::Clipboard);
+    QTimer::singleShot(timeout * 1000, kc, [kc]() {
+        kc->clear(QClipboard::Clipboard);
     });
 }
 
