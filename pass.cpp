@@ -38,9 +38,10 @@
 
 using namespace std;
 
+K_PLUGIN_CLASS_WITH_JSON(Pass, "pass.json")
 
-Pass::Pass(QObject *parent, const QVariantList &args)
-    : Plasma::AbstractRunner(parent, args)
+Pass::Pass(QObject *parent, const KPluginMetaData &metaData, const QVariantList &args)
+    : Plasma::AbstractRunner(parent, metaData, args)
 {
     // General runner configuration
     setObjectName(QStringLiteral("Pass"));
@@ -267,7 +268,5 @@ void Pass::showNotification(const QString &text, const QString &actionName)
                          "object-unlocked", nullptr, KNotification::CloseOnTimeout,
                          "krunner_pass");
 }
-
-K_EXPORT_PLASMA_RUNNER(pass, Pass)
 
 #include "pass.moc"

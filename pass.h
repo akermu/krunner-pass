@@ -30,7 +30,7 @@ class Pass : public Plasma::AbstractRunner
     Q_OBJECT
 
 public:
-    Pass(QObject *parent, const QVariantList &args);
+    Pass(QObject *parent, const KPluginMetaData &metaData, const QVariantList &args);
     ~Pass() override;
 
     void clip(const QString &msg);

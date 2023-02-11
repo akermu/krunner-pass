@@ -1,0 +1,22 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "fuermetz@mailbox.org",
+                "Name": "Lukas Fürmetz"
+            },
+            {
+                "Email": "me@thaodan.de",
+                "Name": "Björn Bidar"
+            }
+        ],
+        "Description": "Copies a password from the password store (https://www.passwordstore.org/) to the clipboard",
+        "EnabledByDefault": true,
+        "Icon": "preferences-desktop-font",
+        "Id": "Pass",
+        "License": "GPL",
+        "Name": "Pass",
+        "Version": "1.1.0"
+    },
+    "X-Plasma-AdvertiseSingleRunnerQueryMode": true
+}
