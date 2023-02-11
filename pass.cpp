@@ -85,7 +85,7 @@ void Pass::reloadConfiguration()
         this->orderedActions << act;
     }
 
-    setDefaultSyntax(Plasma::RunnerSyntax(QString(":q:"),
+    addSyntax(Plasma::RunnerSyntax(QString(":q:"),
                                           i18n("Looks for a password matching :q:. Pressing ENTER copies the password to the clipboard.")));
 
     addSyntax(Plasma::RunnerSyntax(QString("pass :q:"),
