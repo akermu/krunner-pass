@@ -239,7 +239,7 @@ void Pass::run(const Plasma::RunnerContext &context, const Plasma::QueryMatch &m
                         }
                     } else {
                         const auto string = QString::fromUtf8(output.data());
-                        const auto lines = string.split('\n', QString::SkipEmptyParts);
+                        const auto lines = string.split('\n', Qt::SkipEmptyParts);
                         if (!lines.isEmpty()) {
                             clip(lines[0]);
                             this->showNotification(match.text());
