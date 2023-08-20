@@ -28,6 +28,8 @@
 #include <QClipboard>
 #include <QDebug>
 #include <QApplication>
+#include <KGuiAddons/ksystemclipboard.h>
+#include <QMimeData>
 
 #include <cstdlib>
 
@@ -185,10 +187,13 @@ void Pass::match(Plasma::RunnerContext &context)
 
 void Pass::clip(const QString &msg)
 {
-    QClipboard *cb = QApplication::clipboard();
-    cb->setText(msg);
-    QTimer::singleShot(timeout * 1000, cb, [cb]() {
-        cb->setText(QString());
+    auto* mimeData = new QMimeData();
+    mimeData->setText(msg);
+    KSystemClipboard::instance()->setMimeData(mimeData, QClipboard::Clipboard);
+    QTimer::singleShot(timeout * 1000, nullptr, []() {
+        auto* mimeData = new QMimeData();
+        mimeData->setText("");
+        KSystemClipboard::instance()->setMimeData(mimeData, QClipboard::Clipboard);
     });
 }
 

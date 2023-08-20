@@ -8,7 +8,7 @@ set (CMAKE_MODULE_PATH
 )
 
 find_package (Qt5 ${QT_MIN_VERSION} REQUIRED CONFIG COMPONENTS Widgets Core Quick DBus)
-find_package (KF5 ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n Service Runner TextWidgets ConfigWidgets PlasmaQuick Notifications Auth)
+find_package (KF5 ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n Service Runner TextWidgets ConfigWidgets PlasmaQuick Notifications Auth GuiAddons)
 
 include(KDEInstallDirs)
 include(KDECMakeSettings)
@@ -55,7 +55,8 @@ target_link_libraries(krunner_pass KF5::Runner Qt5::Widgets
                       KF5::Service
                       KF5::Plasma
                       KF5::ConfigWidgets
-                      KF5::Notifications)
+                      KF5::Notifications
+                      KF5::GuiAddons)
 
 add_dependencies(krunner_pass kcm_krunner_pass)
 
