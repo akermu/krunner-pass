@@ -25,7 +25,7 @@
 #include "kcmutils_version.h"
 #include "config.h"
 
-K_PLUGIN_FACTORY(PassConfigFactory, registerPlugin<PassConfig>("kcm_krunner_pass");)
+K_PLUGIN_FACTORY_WITH_JSON(PassConfigFactory, "pass.json", registerPlugin<PassConfig>();)
 
 PassConfigForm::PassConfigForm(QWidget *parent)
         : QWidget(parent)

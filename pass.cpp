@@ -45,7 +45,6 @@ Pass::Pass(QObject *parent, const KPluginMetaData &metaData, const QVariantList 
 {
     // General runner configuration
     setObjectName(QStringLiteral("Pass"));
-    setSpeed(AbstractRunner::NormalSpeed);
     setPriority(HighestPriority);
 }
 
@@ -53,7 +52,7 @@ Pass::~Pass() = default;
 
 void Pass::reloadConfiguration()
 {
-    clearActions();
+    //clearActions(); deprecated, needed?
     orderedActions.clear();
 
     KConfigGroup cfg = config();
@@ -62,15 +61,15 @@ void Pass::reloadConfiguration()
 
     if (showActions) {
         const auto configActions = cfg.group(Config::Group::Actions);
-
-        // Create actions for every additional field
         const auto configActionsList = configActions.groupList();
         for (const auto &name: configActionsList) {
             auto group = configActions.group(name);
+            // FIXME how to  fallback?
             auto passAction = PassAction::fromConfig(group);
 
             auto icon = QIcon::fromTheme(passAction.icon, QIcon::fromTheme("object-unlocked"));
-            QAction *act = addAction(passAction.name, icon, passAction.name);
+            //KRunner::Action(actionId, QStringLiteral("process-stop"), i18n("Send SIGKILL")),
+            auto *act = new QAction(icon, passAction.name, this);
             act->setData(passAction.regex);
             this->orderedActions << act;
         }
@@ -80,8 +79,8 @@ void Pass::reloadConfiguration()
     }
 
     if (cfg.readEntry(Config::showFileContentAction, false)) {
-        QAction *act = addAction(Config::showFileContentAction, QIcon::fromTheme("document-new"),
-                                 i18n("Show password file contents"));
+        auto *act = new QAction(QIcon::fromTheme("document-new"),
+                                 i18n("Show password file contents"), this);
         act->setData(Config::showFileContentAction);
         this->orderedActions << act;
     }
@@ -174,8 +173,8 @@ void Pass::match(Plasma::RunnerContext &context)
     for (const auto &password: qAsConst(passwords)) {
         if (password.contains(input, Qt::CaseInsensitive)) {
             Plasma::QueryMatch match(this);
-            match.setType(input.length() == password.length() ?
-                          Plasma::QueryMatch::ExactMatch : Plasma::QueryMatch::CompletionMatch);
+            match.setCategoryRelevance(input.length() == password.length() ? Plasma::QueryMatch::CategoryRelevance::Highest :
+                                       Plasma::QueryMatch::CategoryRelevance::Moderate);
             match.setIcon(QIcon::fromTheme("object-locked"));
             match.setText(password);
             matches.append(match);
