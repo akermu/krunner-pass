@@ -20,6 +20,18 @@
 #define PASS_H
 
 #include <KRunner/AbstractRunner>
+
+namespace KRunner {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    using AbstractRunner = Plasma::AbstractRunner;
+    using RunnerContext = Plasma::RunnerContext;
+    using QueryMatch = Plasma::QueryMatch;
+    using RunnerSyntax = Plasma::RunnerSyntax;
+#else
+class Action;
+#endif
+}
+
 #include <QDir>
 #include <QReadWriteLock>
 #include <QFileSystemWatcher>
