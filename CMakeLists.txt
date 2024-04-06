@@ -30,6 +30,7 @@ find_package (KF5 ${KF5_MIN_VERSION}
 include(KDEInstallDirs)
 include(KDECMakeSettings)
 include(KDECompilerSettings NO_POLICY_SCOPE)
+include(FeatureSummary)
 
 # CPack configuration
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Copies a password from the password store (https://www.passwordstore.org/) to the clipboard")
@@ -82,3 +83,5 @@ install(TARGETS kcm_krunner_pass DESTINATION ${KDE_INSTALL_QTPLUGINDIR}/kf5/krun
 install(TARGETS krunner_pass DESTINATION ${KDE_INSTALL_QTPLUGINDIR}/kf5/krunner)
 install(FILES plasma-runner-pass_config.desktop DESTINATION ${SERVICES_INSTALL_DIR})
 install(FILES krunner_pass.notifyrc DESTINATION ${KNOTIFYRC_INSTALL_DIR})
+
+feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
