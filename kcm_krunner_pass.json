@@ -1,0 +1,12 @@
+{
+    "KPlugin": {
+        "Name": "Pass",
+        "ServiceTypes": [
+            "KCModule"
+        ]
+    },
+    "X-KDE-ParentComponents": [
+        "Pass"
+    ],
+    "X-KDE-PluginKeyword": "kcm_krunner_pass"
+}

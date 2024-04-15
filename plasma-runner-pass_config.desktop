@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Service
-X-KDE-ServiceTypes=KCModule
-X-KDE-Library=kcm_krunner_pass
-X-KDE-ParentComponents=Pass
-X-KDE-PluginKeyword=kcm_krunner_pass
-
-Name=Pass

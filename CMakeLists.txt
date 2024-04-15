@@ -86,6 +86,7 @@ target_link_libraries(kcm_krunner_pass
     KF${KF_MAJOR_VERSION}::Runner
     KF${KF_MAJOR_VERSION}::KCMUtils
     )
+kcmutils_generate_desktop_file(kcm_krunner_pass)
 
 add_library(krunner_pass MODULE ${krunner_pass_SRCS})
 target_link_libraries(krunner_pass KF${KF_MAJOR_VERSION}::Runner Qt${QT_MAJOR_VERSION}::Widgets
