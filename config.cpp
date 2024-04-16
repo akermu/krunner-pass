@@ -69,7 +69,7 @@ PassConfigForm::addPassAction(const QString &name, const QString &icon, const QS
     auto *buttonRemoveAction = new QToolButton(listWidget);
 
     buttonRemoveAction->setIcon(QIcon::fromTheme("delete"));
-    layoutAction->setMargin(0);
+    layoutAction->setContentsMargins(0,0,0,0);
     layoutAction->addStretch();
     layoutAction->addWidget(buttonRemoveAction);
     listWidget->setLayout(layoutAction);
