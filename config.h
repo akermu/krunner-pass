@@ -87,7 +87,9 @@ class PassConfig : public KCModule
     Q_OBJECT
 
 public:
-    explicit PassConfig(QWidget* parent = nullptr, const QVariantList& args = QVariantList());
+  explicit PassConfig(QWidget *parent = nullptr,
+                      const KPluginMetaData &data = {},
+                      const QVariantList &args = QVariantList());
 
 public Q_SLOTS:
     void save() override;

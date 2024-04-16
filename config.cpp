@@ -127,10 +127,11 @@ void PassConfigForm::validateAddButton()
             this->lineRegEx->text().isEmpty());
 }
 
-PassConfig::PassConfig(QWidget *parent, const QVariantList &args)
+PassConfig::PassConfig(QWidget *parent, const KPluginMetaData &data, const QVariantList &args)
         :
-        KCModule(parent, args)
+        KCModule(parent, data)
 {
+    Q_UNUSED(args)
     this->ui = new PassConfigForm(this);
     QGridLayout *layout = new QGridLayout(this);
     layout->addWidget(ui, 0, 0);
