@@ -19,6 +19,8 @@
 #ifndef PASS_H
 #define PASS_H
 
+
+//#include <KRunner/krunner_version.h> not found on kde ci
 #include <KRunner/AbstractRunner>
 
 namespace KRunner {
@@ -37,7 +39,7 @@ class Action;
 #include <QFileSystemWatcher>
 #include <QRegularExpression>
 
-class Pass : public Plasma::AbstractRunner
+class Pass : public KRunner::AbstractRunner
 {
     Q_OBJECT
 
@@ -46,9 +48,9 @@ public:
     ~Pass() override;
 
     void clip(const QString &msg);
-    void match(Plasma::RunnerContext &) override;
-    void run(const Plasma::RunnerContext &, const Plasma::QueryMatch &) override;
-    QList<QAction *> actionsForMatch(const Plasma::QueryMatch &) override;
+    void match(KRunner::RunnerContext &) override;
+    void run(const KRunner::RunnerContext &, const KRunner::QueryMatch &) override;
+    QList<QAction *> actionsForMatch(const KRunner::QueryMatch &) override;
     void reloadConfiguration() override;
     
     
