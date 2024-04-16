@@ -127,13 +127,13 @@ void PassConfigForm::validateAddButton()
             this->lineRegEx->text().isEmpty());
 }
 
-PassConfig::PassConfig(QWidget *parent, const KPluginMetaData &data, const QVariantList &args)
+PassConfig::PassConfig(QObject *parent, const KPluginMetaData &data, const QVariantList &args)
         :
         KCModule(parent, data)
 {
     Q_UNUSED(args)
-    this->ui = new PassConfigForm(this);
-    QGridLayout *layout = new QGridLayout(this);
+    this->ui = new PassConfigForm(this->widget());
+    QGridLayout *layout = new QGridLayout(this->widget());
     layout->addWidget(ui, 0, 0);
 #if KCMUTILS_VERSION >= QT_VERSION_CHECK(5, 64, 0)
     const auto changedSlotPointer = &PassConfig::markAsChanged;

@@ -87,7 +87,7 @@ class PassConfig : public KCModule
     Q_OBJECT
 
 public:
-  explicit PassConfig(QWidget *parent = nullptr,
+  explicit PassConfig(QObject *parent = nullptr,
                       const KPluginMetaData &data = {},
                       const QVariantList &args = QVariantList());
 
