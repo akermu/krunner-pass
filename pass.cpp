@@ -19,6 +19,7 @@
 #include <KLocalizedString>
 #include <KNotification>
 
+#include <QIcon>
 #include <QAction>
 #include <QDirIterator>
 #include <QProcess>
@@ -84,11 +85,9 @@ void Pass::reloadConfiguration()
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             auto icon = QIcon::fromTheme(passAction.icon, QIcon::fromTheme("object-unlocked"));
-            //KRunner::Action(actionId, QStringLiteral("process-stop"), i18n("Send SIGKILL")),
             auto *act = new QAction(icon, passAction.name, this);
             act->setData(passAction.regex);
 #else
-            actionIdCounter++;
             auto *act = new KRunner::Action(passAction.regex, QIcon::hasThemeIcon(passAction.icon) ?
                                             passAction.icon : QStringLiteral("object-unlocked"),  passAction.name);
 #endif
