@@ -18,5 +18,6 @@
         "Name": "Pass",
         "Version": "1.1.0"
     },
-    "X-Plasma-AdvertiseSingleRunnerQueryMode": true
+    "X-Plasma-AdvertiseSingleRunnerQueryMode": true,
+    "X-KDE-ConfigModule": "kf6/krunner/kcms/kcm_krunner_pass"
 }
