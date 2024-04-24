@@ -25,7 +25,7 @@
 #include "kcmutils_version.h"
 #include "config.h"
 
-K_PLUGIN_FACTORY(PassConfigFactory, registerPlugin<PassConfig>("kcm_krunner_pass");)
+K_PLUGIN_FACTORY_WITH_JSON(PassConfigFactory, "pass.json", registerPlugin<PassConfig>();)
 
 PassConfigForm::PassConfigForm(QWidget *parent)
         : QWidget(parent)
@@ -69,7 +69,7 @@ PassConfigForm::addPassAction(const QString &name, const QString &icon, const QS
     auto *buttonRemoveAction = new QToolButton(listWidget);
 
     buttonRemoveAction->setIcon(QIcon::fromTheme("delete"));
-    layoutAction->setMargin(0);
+    layoutAction->setContentsMargins(0,0,0,0);
     layoutAction->addStretch();
     layoutAction->addWidget(buttonRemoveAction);
     listWidget->setLayout(layoutAction);
@@ -127,12 +127,13 @@ void PassConfigForm::validateAddButton()
             this->lineRegEx->text().isEmpty());
 }
 
-PassConfig::PassConfig(QWidget *parent, const QVariantList &args)
+PassConfig::PassConfig(QObject *parent, const KPluginMetaData &data, const QVariantList &args)
         :
-        KCModule(parent, args)
+        KCModule(parent, data)
 {
-    this->ui = new PassConfigForm(this);
-    QGridLayout *layout = new QGridLayout(this);
+    Q_UNUSED(args)
+    this->ui = new PassConfigForm(this->widget());
+    QGridLayout *layout = new QGridLayout(this->widget());
     layout->addWidget(ui, 0, 0);
 #if KCMUTILS_VERSION >= QT_VERSION_CHECK(5, 64, 0)
     const auto changedSlotPointer = &PassConfig::markAsChanged;

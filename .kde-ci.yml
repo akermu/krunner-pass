@@ -1,0 +1,33 @@
+# SPDX-FileCopyrightText: None
+# SPDX-License-Identifier: CC0-1.0
+
+Dependencies:
+- 'on': ['Linux/Qt5', 'FreeBSD/Qt5']
+  'require':
+    'frameworks/extra-cmake-modules': '@stable'
+    'frameworks/kcoreaddons': '@stable'
+    'frameworks/kconfig': '@stable'
+    'frameworks/kconfigwidgets': '@stable'
+    'frameworks/ki18n': '@stable'
+    'frameworks/knotifications': '@stable'
+    'frameworks/krunner': '@stable'
+    'frameworks/kcmutils': '@stable'
+    'frameworks/kguiaddons': '@stable'
+    'plasma/libplasma': '@stable'
+    'frameworks/kguiaddons': '@stable'
+    'frameworks/kservice': '@stable'
+
+- 'on': ['Linux/Qt6', 'FreeBSD/Qt6']
+  'require':
+    'frameworks/extra-cmake-modules': '@latest-kf6'
+    'frameworks/kcoreaddons': '@latest-kf6'
+    'frameworks/kconfig': '@latest-kf6'
+    'frameworks/kconfigwidgets': '@latest-kf6'
+    'frameworks/ki18n': '@latest-kf6'
+    'frameworks/knotifications': '@latest-kf6'
+    'frameworks/krunner': '@latest-kf6'
+    'frameworks/kcmutils': '@latest-kf6'
+    'frameworks/kguiaddons': '@latest-kf6'
+    'plasma/libplasma': '@latest-kf6'
+    'frameworks/kguiaddons': '@latest-kf6'
+    'frameworks/kservice': '@latest-kf6'

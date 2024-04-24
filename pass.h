@@ -19,24 +19,41 @@
 #ifndef PASS_H
 #define PASS_H
 
+
+//#include <KRunner/krunner_version.h> not found on kde ci
 #include <KRunner/AbstractRunner>
+
+namespace KRunner {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    using AbstractRunner = Plasma::AbstractRunner;
+    using RunnerContext = Plasma::RunnerContext;
+    using QueryMatch = Plasma::QueryMatch;
+    using RunnerSyntax = Plasma::RunnerSyntax;
+#else
+class Action;
+#endif
+}
+
 #include <QDir>
 #include <QReadWriteLock>
 #include <QFileSystemWatcher>
 #include <QRegularExpression>
 
-class Pass : public Plasma::AbstractRunner
+class Pass : public KRunner::AbstractRunner
 {
     Q_OBJECT
 
 public:
-    Pass(QObject *parent, const QVariantList &args);
+    Pass(QObject *parent, const KPluginMetaData &metaData, const QVariantList &args);
     ~Pass() override;
 
     void clip(const QString &msg);
-    void match(Plasma::RunnerContext &) override;
-    void run(const Plasma::RunnerContext &, const Plasma::QueryMatch &) override;
-    QList<QAction *> actionsForMatch(const Plasma::QueryMatch &) override;
+    void match(KRunner::RunnerContext &) override;
+    void run(const KRunner::RunnerContext &, const KRunner::QueryMatch &) override;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    QList<QAction *> actionsForMatch(const KRunner::QueryMatch &) override;
+#endif
+
     void reloadConfiguration() override;
     
     
@@ -57,7 +74,11 @@ private:
     QFileSystemWatcher watcher;
     
     bool showActions;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QList<QAction *> orderedActions;
+#else
+    QList<KRunner::Action *> orderedActions;
+#endif
 
     const QRegularExpression queryPrefix = QRegularExpression("^pass( .+)?$");
 };
